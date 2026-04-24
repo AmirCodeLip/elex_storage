@@ -1,0 +1,28 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+option go_package = "elex_storage/pkg/shared_kernel/grpc_service"; 
+package file_metadata;
+
+message CreateDirectoryRequest {
+  string name = 1;
+  string parentId = 2;
+}
+
+message GetDirectoriesRequest {
+    string parrentId = 1;
+}
+
+message DirectoryInfo {
+  string id = 1;
+  string name = 2;
+}
+
+message DirectoriesResponse {
+  repeated DirectoryInfo directories = 1;
+}
+
+service FileMetadataService {
+  rpc GetDirectories(google.protobuf.Empty) returns (DirectoriesResponse);
+  rpc CreateDirectory (CreateDirectoryRequest) returns (DirectoryInfo);
+}

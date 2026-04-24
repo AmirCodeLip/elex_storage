@@ -1,0 +1,12 @@
+
+build-api-gateway:
+	docker build -t api_gateway -f api_gateway/Dockerfile .
+
+build-identity-service:
+	docker build -t identity_service:1.0.1 -f identity_service/Dockerfile .
+
+build-file_storage:
+	docker build -t file_storage:1.0.1 -f file_storage/Dockerfile .
+
+build-file_metadata:
+	docker build -t file_metadata:1.0.1 -f file_metadata/Dockerfile .

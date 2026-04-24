@@ -1,0 +1,95 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: elex_postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: elex_storage
+      POSTGRES_PASSWORD: pass1234
+      POSTGRES_DB: elex_storage_db
+    ports:
+      - "10252:5432"  # Expose PostgreSQL port
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    command: postgres -c listen_addresses='*'  # Allow all connections
+    networks:
+      - elex_storage_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U elex_storage -d elex_storage_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: elex_pgadmin_ui
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5051:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - elex_storage_network
+  rabbitmq:
+    container_name: elex_rabbitmq
+    image: rabbitmq:management
+    restart: unless-stopped
+    ports:
+      - 10253:5672
+      - 10254:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: elex_storage
+      RABBITMQ_DEFAULT_PASS: pass1234
+    networks:
+      - elex_storage_network
+  elex_identity_service:
+    container_name: elex_identity_service
+    image: identity_service:1.0.1
+    ports:
+      - 50051:50051
+    networks:
+      - elex_storage_network
+    environment:
+      DB_HOST: elex_postgres_db
+      DB_PORT: 5432
+      DB_DATABASE: identity_service
+      DB_USERNAME: elex_storage
+      DB_PASSWORD: pass1234
+      DB_SCHEMA: public
+      RABBITMQ_HOST: elex_rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: elex_storage
+      RABBITMQ_PASSWORD: pass1234
+      LOGGER_PATH: identity_service.log
+      GRPC_PORT: 50051
+  elex_file_storage:
+    container_name: elex_file_storage
+    image: file_storage:1.0.1
+    ports:
+      - "50052:50052"
+    networks:
+      - elex_storage_network
+    environment:
+      DB_HOST: elex_postgres_db
+      DB_PORT: 5432
+      DB_DATABASE: file_storage
+      DB_USERNAME: elex_storage
+      DB_PASSWORD: pass1234
+      DB_SCHEMA: public
+      RABBITMQ_HOST: elex_rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: elex_storage
+      RABBITMQ_PASSWORD: pass1234
+      LOGGER_PATH: file_storage.log
+      DRIVE_DISK: bin_files
+      DRIVE_NAME: iran_north_cloud
+      PORT: 50052
+volumes:
+  postgres_data:
+
+networks:
+  elex_storage_network:
+    driver: bridge

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "elex_storage/pkg/shared_kernel/grpc_service"; 
+package users;
+
+message RegisterUserRequest {
+  string name = 1;
+  string email = 2;
+  string phone = 3;
+  string password = 4;
+}
+
+message LoginUserRequest {
+  string userName = 1;
+  string password = 2; 
+}
+
+message TokenResponse {
+  string userId = 1;
+  string accessToken = 2;
+  string refreshToken = 3;
+}
+
+service UserService {
+  rpc Register (RegisterUserRequest) returns (TokenResponse);
+  rpc Login (LoginUserRequest) returns (TokenResponse);
+}

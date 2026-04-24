@@ -1,0 +1,42 @@
+FROM golang:1.26-alpine AS builder
+
+ENV GOPROXY=https://hub.megan.ir/go
+
+# 1. COPY ONLY go.mod and go.sum files first
+WORKDIR /app
+COPY file_metadata/go.mod file_metadata/go.sum ./file_metadata/
+COPY pkg/go.mod pkg/go.sum ./pkg/
+
+# 2. Download dependencies
+WORKDIR /app/file_metadata
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+# 3. NOW copy the rest of the application source code
+WORKDIR /app
+COPY pkg ./pkg
+COPY file_metadata ./file_metadata
+
+# 4. Build the application
+WORKDIR /app/file_metadata
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -o main ./cmd
+
+# 5. Use a smaller image for the final container
+FROM alpine:latest
+ 
+# 6. Copy required files and setting to the final project
+WORKDIR /app
+COPY --from=builder /app/file_metadata/.env .env
+COPY --from=builder /app/file_metadata/migrations/ migrations/
+
+# Copy binary from builder
+WORKDIR /app/file_metadata
+COPY --from=builder /app/file_metadata/main ./main
+ 
+EXPOSE 50052
+
+CMD ["./main"]
+
+
+

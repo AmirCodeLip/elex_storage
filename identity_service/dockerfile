@@ -1,0 +1,43 @@
+FROM golang:1.26-alpine AS builder
+
+ENV GOPROXY=https://hub.megan.ir/go
+
+# 1. COPY ONLY go.mod and go.sum files first
+WORKDIR /app
+COPY identity_service/go.mod identity_service/go.sum ./identity_service/
+COPY pkg/go.mod pkg/go.sum ./pkg/
+
+# 2. Download dependencies
+WORKDIR /app/identity_service
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
+
+# 3. NOW copy the rest of the application source code
+WORKDIR /app
+COPY pkg ./pkg
+COPY identity_service ./identity_service
+
+WORKDIR /app/identity_service
+
+# 4. Build the application
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -o main ./cmd
+
+# 5. Use a smaller image for the final container
+FROM alpine:latest
+
+# 6. Copy required files and setting to the final project
+WORKDIR /app
+COPY --from=builder /app/identity_service/.env .env
+COPY --from=builder /app/identity_service/migrations/ migrations/
+COPY --from=builder /app/identity_service/jwt_identity_private.key jwt_identity_private.key
+COPY --from=builder /app/identity_service/jwt_identity_public.key jwt_identity_public.key
+
+# Copy binary from builder
+WORKDIR /app/identity_service
+COPY --from=builder /app/identity_service/main ./main
+ 
+EXPOSE 50051
+
+CMD ["./main"]
