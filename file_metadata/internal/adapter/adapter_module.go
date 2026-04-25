@@ -2,13 +2,11 @@ package adapter
 
 import (
 	"elex_storage/file_metadata/internal/adapter/grpc_server"
-	"elex_storage/file_metadata/internal/adapter/http_handlers"
 	"elex_storage/file_metadata/internal/adapter/messaging/subscribers"
 	"elex_storage/file_metadata/internal/adapter/pgx_repositories"
 	"elex_storage/pkg/message_broker"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
 	"go.uber.org/fx"
 )
 
@@ -31,19 +29,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func RegisterHttpRoutes(httpHandler *http_handlers.HttpHandler) *http.Handler {
-	r := httprouter.New()
-	corsWrapper := corsMiddleware(r)
-
-	// Register routes
-	r.HandlerFunc(http.MethodGet, "/health", httpHandler.HealthHandler)
-	r.HandlerFunc(http.MethodPost, "/directories", httpHandler.CreateDirectoryHandler)
-	// r.HandlerFunc(http.MethodPost, "/invoke_event", eventBus.Listen)
-	// mux.Handle("/api/secure", authMiddleware(secureHandler))
-
-	return &corsWrapper
-}
-
 func registerSubscribes(eventMessaging message_broker.EventMessaging, fileCreatedSubscriber *subscribers.FileCreatedSubscriber) {
 	eventMessaging.Subscribe(nil, "file.created", fileCreatedSubscriber.Handle)
 }
@@ -54,8 +39,6 @@ func AdapterModule() fx.Option {
 		fx.Provide(pgx_repositories.CreateFileMetadataRepository),
 		fx.Provide(pgx_repositories.CreateDirectoryMetadataRepository),
 		// Provide handlers
-		fx.Provide(http_handlers.NewHttpHandler),
-		fx.Provide(RegisterHttpRoutes),
 		fx.Provide(grpc_server.NewFileMetadataService),
 		// Messaging setup
 		fx.Provide(subscribers.NewFileCreatedSubscriber),

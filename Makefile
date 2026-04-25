@@ -9,4 +9,4 @@ build-file_storage:
 	docker build -t file_storage:1.0.1 -f file_storage/Dockerfile .
 
 build-file_metadata:
-	docker build -t file_metadata:1.0.1 -f file_metadata/Dockerfile .
+	docker build -t file_metadata:1.0.2 -f file_metadata/Dockerfile .

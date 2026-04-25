@@ -54,6 +54,15 @@ services:
       - elex_storage_network
     env_file:
       - ./docker_app.env
+  elex_file_metadata:
+    container_name: elex_file_metadata
+    image: file_metadata:1.0.2
+    ports:
+      - 50052:50052
+    networks:
+      - elex_storage_network
+    env_file:
+      - ./docker_app.env
   elex_file_storage:
     container_name: elex_file_storage
     image: file_storage:1.0.1

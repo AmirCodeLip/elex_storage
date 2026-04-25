@@ -18,12 +18,15 @@ func WrapGrpcFunc[Req any, Res any](
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req Req
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			handler.httpErrorUtils.BadRequest(w, errors.New("Can't parse content"))
-			return
+		if r.Method == http.MethodPost {
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				handler.httpErrorUtils.BadRequest(w, errors.New("Can't parse content"))
+				return
+			}
 		}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
+		// Call a gRPC function
 		response, err := (fn(ctx, &req))
 		if err != nil {
 			st, ok := status.FromError(err)

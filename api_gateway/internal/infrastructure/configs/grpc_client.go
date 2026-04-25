@@ -8,14 +8,23 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func NewGRPCClient(cfg *models.ConfigEnv) (grpc_service.UserServiceClient, error) {
+func NewGRPCClient(cfg *models.ConfigEnv) (grpc_service.UserServiceClient, grpc_service.FileMetadataServiceClient, error) {
 	identityConn, err := grpc.NewClient(
 		cfg.IdentityServiceGrpcAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	client := grpc_service.NewUserServiceClient(identityConn)
-	return client, nil
+	fileMetadata, err := grpc.NewClient(
+		cfg.FileMetadataGrpcAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userServiceClient := grpc_service.NewUserServiceClient(identityConn)
+	fileMetadataClient := grpc_service.NewFileMetadataServiceClient(fileMetadata)
+	return userServiceClient, fileMetadataClient, nil
 }

@@ -20,11 +20,11 @@ type Server struct {
 }
 
 func NewServer(handler *http.Handler, cfg *models.ConfigEnv) *Server {
-	port, _ := strconv.Atoi(cfg.ApiGatewayServicePort)
+	port, _ := strconv.Atoi(cfg.ApiGatewayHttpPort)
 	return &Server{
 		port: port,
 		server: &http.Server{
-			Addr:         cfg.ApiGatewayServiceAddr,
+			Addr:         cfg.ApiGatewayHttpAddr,
 			Handler:      *handler,
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  10 * time.Second,

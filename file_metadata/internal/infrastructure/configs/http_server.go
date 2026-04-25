@@ -22,7 +22,7 @@ type Server struct {
 }
 
 func NewServer(handler *http.Handler, cfg *models.ConfigEnv) *Server {
-	port, _ := strconv.Atoi(os.Getenv(cfg.HttpPort))
+	port, _ := strconv.Atoi(os.Getenv("8989"))
 	return &Server{
 		port: port,
 		server: &http.Server{

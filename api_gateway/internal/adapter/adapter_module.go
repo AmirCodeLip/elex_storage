@@ -41,11 +41,15 @@ func RegisterHttpRoutes(httpHandler *http_handlers.HttpHandler, fileStorageRepos
 	r := httprouter.New()
 	corsWrapper := corsMiddleware(r)
 
-	// Register routes
-	// User routes
+	// identity_service routes
 	r.HandlerFunc(http.MethodPost, "/users/login", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.UserServiceClient.Login))
 	r.HandlerFunc(http.MethodPost, "/users/register", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.UserServiceClient.Register))
-	// File storage routes
+
+	// file_metadata routes
+	r.HandlerFunc(http.MethodGet, "/directories", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.FileMetadataServiceClient.GetDirectories))
+	r.HandlerFunc(http.MethodPost, "/directories", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.FileMetadataServiceClient.CreateDirectory))
+
+	// file_storage routes
 	r.HandlerFunc(http.MethodPost, "/file/upload", http_handlers.HttpProxyFunc(httpHandler, fileStorageRepository.Upload))
 
 	return &corsWrapper

@@ -27,7 +27,7 @@ func RegisterAndStartGRPCServer(
 	// Hook into the Fx Application Lifecycle
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			grpcPort := fmt.Sprintf(":%s", cfg.GrpcPort)
+			grpcPort := fmt.Sprintf(":%s", cfg.FileMetadataGrpcPort)
 			listener, err := net.Listen("tcp", grpcPort)
 			if err != nil {
 				return err

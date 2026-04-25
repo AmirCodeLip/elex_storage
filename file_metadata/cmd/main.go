@@ -28,7 +28,7 @@ func main() {
 		use_case.UseCaseModule(),
 		adapter.AdapterModule(),
 		fx.Invoke(database.ApplyMigration),
-		fx.Invoke(configs.RegisterFX),
+		// fx.Invoke(configs.RegisterFX),
 		fx.Invoke(configs.RegisterAndStartGRPCServer),
 		fx.Invoke(configs.OnAppStop),
 	).Run()

@@ -42,13 +42,26 @@ func setIdentityService(config *models.ConfigEnv) error {
 
 func setApiGatewayService(config *models.ConfigEnv) error {
 	api_gateway_http_addr := os.Getenv("API_GATEWAY_HTTP_Addr")
-	config.ApiGatewayServiceAddr = api_gateway_http_addr
+	config.ApiGatewayHttpAddr = api_gateway_http_addr
 	host, port, err := parseAddress(api_gateway_http_addr)
-	config.ApiGatewayServiceHost = host
-	config.ApiGatewayServicePort = fmt.Sprintf("%d", port)
+	config.ApiGatewayHttpHost = host
+	config.ApiGatewayHttpPort = fmt.Sprintf("%d", port)
 	if err != nil {
 		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", config.ApiGatewayServiceAddr)), err)
+			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", config.ApiGatewayHttpAddr)), err)
+	}
+	return nil
+}
+
+func setFileMetadataService(config *models.ConfigEnv) error {
+	file_metadata_grpc_addr := os.Getenv("FILE_META_DATA_GRPC_Addr")
+	config.FileMetadataGrpcAddr = file_metadata_grpc_addr
+	host, port, err := parseAddress(file_metadata_grpc_addr)
+	config.FileMetadataGrpcHost = host
+	config.FileMetadataGrpcPort = fmt.Sprintf("%d", port)
+	if err != nil {
+		return errors.Join(errors.New(
+			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", config.FileMetadataGrpcAddr)), err)
 	}
 	return nil
 }
@@ -75,11 +88,13 @@ func NewConfigEnv() (*models.ConfigEnv, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = setFileMetadataService(&config)
+	if err != nil {
+		return nil, err
+	}
 
 	config.MigrationsDir = os.Getenv("MIGRATIONS_DIR")
 	config.LoggerPath = os.Getenv("LOGGER_PATH")
-	config.HttpPort = os.Getenv("FILE_META_DATA_HTTP_PORT")
-	config.GrpcPort = os.Getenv("FILE_META_DATA_GRPC_PORT")
 
 	/// Postgres configs
 	database := os.Getenv("DB_DATABASE")
