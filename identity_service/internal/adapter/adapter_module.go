@@ -4,7 +4,7 @@ import (
 	"elex_storage/identity_service/internal/adapter/grpc_server"
 	"elex_storage/identity_service/internal/adapter/messaging/publishers"
 	"elex_storage/identity_service/internal/adapter/pgx_repositories"
-	"elex_storage/identity_service/internal/domain"
+	"elex_storage/pkg/shared_kernel/models"
 	"elex_storage/pkg/shared_kernel/token_handlers"
 	"net/http"
 
@@ -30,7 +30,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func configureJwt(config *domain.ConfigEnv) (*token_handlers.JwtToken, error) {
+func configureJwt(config *models.ConfigEnv) (*token_handlers.JwtToken, error) {
 	jwtToken, err := token_handlers.NewJwtToken(config.AccessTokenDuration, config.RefreshTokenDuration)
 	if err != nil {
 		return nil, err

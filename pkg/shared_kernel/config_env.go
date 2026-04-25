@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 )
@@ -23,6 +24,19 @@ func setIdentityService(config *models.ConfigEnv) error {
 		return errors.Join(errors.New(
 			fmt.Sprintf("Can't parse IDENTITY_SERVICE_Grpc_Addr is not valid host %s", grpcAddr)), err)
 	}
+	// Set AccessTokenDuration
+	val1 := os.Getenv("ACCESS_TOKEN_DURATION")
+	accessTokenDuration, err := time.ParseDuration(val1)
+	if err != nil {
+		return err
+	}
+	val2 := os.Getenv("REFRESH_TOKEN_DURATION")
+	refreshTokenDuration, err := time.ParseDuration(val2)
+	if err != nil {
+		return err
+	}
+	config.RefreshTokenDuration = refreshTokenDuration
+	config.AccessTokenDuration = accessTokenDuration
 	return nil
 }
 

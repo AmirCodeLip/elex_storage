@@ -47,24 +47,13 @@ services:
       - elex_storage_network
   elex_identity_service:
     container_name: elex_identity_service
-    image: identity_service:1.0.1
+    image: identity_service:1.0.2
     ports:
       - 50051:50051
     networks:
       - elex_storage_network
-    environment:
-      DB_HOST: elex_postgres_db
-      DB_PORT: 5432
-      DB_DATABASE: identity_service
-      DB_USERNAME: elex_storage
-      DB_PASSWORD: pass1234
-      DB_SCHEMA: public
-      RABBITMQ_HOST: elex_rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: elex_storage
-      RABBITMQ_PASSWORD: pass1234
-      LOGGER_PATH: identity_service.log
-      GRPC_PORT: 50051
+    env_file:
+      - ./docker_app.env
   elex_file_storage:
     container_name: elex_file_storage
     image: file_storage:1.0.1

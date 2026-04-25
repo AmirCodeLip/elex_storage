@@ -2,12 +2,12 @@ package core_utils
 
 import (
 	"crypto/sha256"
-	"elex_storage/identity_service/internal/domain"
+	"elex_storage/pkg/shared_kernel/models"
 	"encoding/hex"
 )
 
 type IdentityUtil struct {
-	config *domain.ConfigEnv
+	config *models.ConfigEnv
 }
 
 func NewIdentityUtil() *IdentityUtil {

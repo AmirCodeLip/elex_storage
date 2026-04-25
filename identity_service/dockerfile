@@ -9,8 +9,7 @@ COPY pkg/go.mod pkg/go.sum ./pkg/
 
 # 2. Download dependencies
 WORKDIR /app/identity_service
-RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 
 # 3. NOW copy the rest of the application source code
 WORKDIR /app

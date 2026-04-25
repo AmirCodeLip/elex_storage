@@ -1,40 +1,40 @@
 FROM golang:1.24-alpine AS builder
 
-# Set the working directory inside the container
-WORKDIR /app
-
 ENV GOPROXY=https://mirror-go.runflare.com
 
-# Copy all files
+# 1. COPY ONLY go.mod and go.sum files first
+WORKDIR /app
+COPY api_gateway/go.mod api_gateway/go.sum ./api_gateway/
+COPY pkg/go.mod pkg/go.sum ./pkg/
+
+
+# 2. Download dependencies
+WORKDIR /app/api_gateway
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+# 3. NOW copy the rest of the application source code
+WORKDIR /app
 COPY pkg ./pkg
 COPY api_gateway ./api_gateway
 
 WORKDIR /app/api_gateway
 
-# Download dependencies
-RUN go mod download
+# 4. Build the application
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -o main ./cmd
 
-# Copy the rest of the application source code
-COPY . .
-
-# Build the application
-RUN go build -o main ./cmd
-
-COPY api_gateway/.env .env
-
-# Use a smaller image for the final container
+# 5. Use a smaller image for the final container
 FROM alpine:latest
 
+# 6. Copy required files and setting to the final project
 WORKDIR /app
 
-COPY --from=builder /app/api_gateway/.env .env
-
-# Set the working directory for the runtime container
-WORKDIR /app/api_gateway
 
 # Copy binary from builder
+WORKDIR /app/api_gateway
 COPY --from=builder /app/api_gateway/main ./main
-
+ 
 EXPOSE 8080
 
 CMD ["./main"]

@@ -2,8 +2,8 @@ package configs
 
 import (
 	"context"
-	"elex_storage/identity_service/internal/domain"
 	"elex_storage/pkg/shared_kernel/grpc_service"
+	"elex_storage/pkg/shared_kernel/models"
 	"fmt"
 	"net"
 
@@ -19,15 +19,14 @@ func RegisterAndStartGRPCServer(
 	lc fx.Lifecycle,
 	grpcServer *grpc.Server,
 	userService grpc_service.UserServiceServer,
-	cfg *domain.ConfigEnv,
+	cfg *models.ConfigEnv,
 ) {
 	grpc_service.RegisterUserServiceServer(grpcServer, userService)
 
 	// Hook into the Fx Application Lifecycle
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			grpcPort := fmt.Sprintf(":%s", cfg.GrpcPort)
-			listener, err := net.Listen("tcp", grpcPort)
+			listener, err := net.Listen("tcp", cfg.IdentityServiceGrpcAddr)
 			if err != nil {
 				return err
 			}
@@ -37,7 +36,7 @@ func RegisterAndStartGRPCServer(
 			// grpcServer.Serve is blocking, so we run it in a goroutine
 			go func() {
 				if err := grpcServer.Serve(listener); err != nil {
-					fmt.Printf("failed to serve: %v", err)
+					fmt.Printf("failed to serve: %v \n", err)
 				}
 			}()
 			return nil

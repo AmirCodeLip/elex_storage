@@ -1,11 +1,10 @@
 package test
 
 import (
-	"elex_storage/identity_service/internal/domain"
-	"elex_storage/identity_service/internal/infrastructure/configs"
 	"elex_storage/identity_service/internal/infrastructure/database"
 	"elex_storage/pkg/logger"
-	"os"
+	"elex_storage/pkg/shared_kernel"
+	"elex_storage/pkg/shared_kernel/models"
 	"testing"
 
 	"github.com/jmoiron/sqlx"
@@ -16,21 +15,22 @@ import (
 type AppTest struct {
 }
 
-func setConfigs() *domain.ConfigEnv {
-	cfg := configs.TestConfigEnv()
-	// ToDo AmirCodelip remove logger path by changing logger test logger.
-	os.Setenv("LOGGER_PATH", "D:\\Projects\\elex_storage\\bin\\logs\\test.log")
+func setConfigs() *models.ConfigEnv {
+	cfg := shared_kernel.TestConfigEnv()
 	return cfg
 }
 
-func InjectBase(t *testing.T) (*fxtest.App, *sqlx.DB, logger.Logger, *domain.ConfigEnv) {
+func InjectBase(t *testing.T) (*fxtest.App, *sqlx.DB, logger.Logger, *models.ConfigEnv) {
 	var db *sqlx.DB
 	var lg logger.Logger
-	var cfg *domain.ConfigEnv
+	var cfg *models.ConfigEnv
 	app := fxtest.New(
 		t,
+		fx.Provide(func() *testing.T {
+			return t
+		}),
 		fx.Provide(setConfigs),
-		fx.Provide(logger.NewLogger),
+		fx.Provide(logger.NewLoggerMock),
 		fx.Provide(database.NewDatabase),
 		fx.Populate(&db),
 		fx.Populate(&lg),

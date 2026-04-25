@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type ConfigEnv struct {
 	MigrationsDir            string
 	GrpcPort                 string
@@ -12,7 +14,8 @@ type ConfigEnv struct {
 	IdentityServiceGrpcHost string
 	IdentityServiceGrpcPort string
 	IdentityServiceGrpcAddr string
-
+	AccessTokenDuration     time.Duration
+	RefreshTokenDuration    time.Duration
 	/// api_gateway configs
 	ApiGatewayServiceAddr string
 	ApiGatewayServicePort string
