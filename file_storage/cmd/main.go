@@ -2,7 +2,6 @@ package main
 
 import (
 	"elex_storage/file_storage/internal/core_utils"
-	"elex_storage/file_storage/internal/domain"
 	"elex_storage/file_storage/internal/infrastructure/configs"
 	"elex_storage/file_storage/internal/infrastructure/database"
 
@@ -11,19 +10,16 @@ import (
 	"elex_storage/pkg/logger"
 	"elex_storage/pkg/message_broker"
 
+	"elex_storage/pkg/shared_kernel"
 	"elex_storage/pkg/shared_kernel/utils"
 
 	"go.uber.org/fx"
 )
 
 func main() {
-	// before start set .env file variables
-	cfg := configs.NewConfigEnv()
 	fx.New(
 		fx.Provide(
-			func() *domain.ConfigEnv {
-				return cfg
-			},
+			shared_kernel.NewConfigEnv,
 			logger.NewLogger,
 			database.NewDatabase,
 			core_utils.NewPathUtil,

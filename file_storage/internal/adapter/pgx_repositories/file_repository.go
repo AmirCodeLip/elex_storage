@@ -1,10 +1,10 @@
 package pgx_repositories
 
 import (
-	"elex_storage/file_storage/internal/domain"
 	"elex_storage/file_storage/internal/domain/entities"
 	"elex_storage/file_storage/internal/domain/repositories"
 	"elex_storage/pkg/logger"
+	"elex_storage/pkg/shared_kernel/models"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -15,7 +15,7 @@ type FileRepository struct {
 	driveDisk string
 }
 
-func CreateFileRepository(logger logger.Logger, db *sqlx.DB, config *domain.ConfigEnv) repositories.FileRepository {
+func CreateFileRepository(logger logger.Logger, db *sqlx.DB, config *models.ConfigEnv) repositories.FileRepository {
 	return &FileRepository{logger: logger, db: db, driveDisk: config.DriveDisk}
 }
 

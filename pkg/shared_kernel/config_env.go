@@ -53,8 +53,23 @@ func setApiGatewayService(config *models.ConfigEnv) error {
 	return nil
 }
 
+func setFileStorageService(config *models.ConfigEnv) error {
+	file_storage_grpc_addr := os.Getenv("FILE_STORAGE_HTTP_Addr")
+	config.FileStorageHttpAddr = file_storage_grpc_addr
+	host, port, err := parseAddress(file_storage_grpc_addr)
+	config.FileStorageHttpHost = host
+	config.FileStorageHttpPort = fmt.Sprintf("%d", port)
+	if err != nil {
+		return errors.Join(errors.New(
+			fmt.Sprintf("Can't parse FileMetadataServiceAddr is not valid host %s", config.FileMetadataGrpcAddr)), err)
+	}
+	return nil
+}
+
 func setFileMetadataService(config *models.ConfigEnv) error {
 	file_metadata_grpc_addr := os.Getenv("FILE_META_DATA_GRPC_Addr")
+	config.DriveDisk = os.Getenv("DRIVE_DISK")
+	config.DriveName = os.Getenv("DRIVE_NAME")
 	config.FileMetadataGrpcAddr = file_metadata_grpc_addr
 	host, port, err := parseAddress(file_metadata_grpc_addr)
 	config.FileMetadataGrpcHost = host
@@ -68,19 +83,21 @@ func setFileMetadataService(config *models.ConfigEnv) error {
 
 // Load configurations from .env file.
 func NewConfigEnv() (*models.ConfigEnv, error) {
-	/// Load config file
+	// Load config file
 	config := models.ConfigEnv{}
 	pwd, _ := os.Getwd()
 	var exeDir = filepath.Dir(pwd)
-	configDir := filepath.Join(exeDir, ".env")
-	errEnv := godotenv.Load(configDir)
-	if errEnv != nil {
-		err := fmt.Errorf("No .env file found in %s \n", configDir)
-		log.Fatal(err)
+	configDir := filepath.Clean(filepath.Join(exeDir, "..", ".env"))
+	_, err := os.Stat(configDir)
+	if err == nil {
+		errEnv := godotenv.Load(configDir)
+		if errEnv != nil {
+			err := fmt.Errorf("No .env file found in %s \n", configDir)
+			log.Fatal(err)
+		}
 	}
-
-	/// Set services configs
-	err := setIdentityService(&config)
+	// Set services configs
+	err = setIdentityService(&config)
 	if err != nil {
 		return nil, err
 	}
@@ -92,11 +109,14 @@ func NewConfigEnv() (*models.ConfigEnv, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	err = setFileStorageService(&config)
+	if err != nil {
+		return nil, err
+	}
 	config.MigrationsDir = os.Getenv("MIGRATIONS_DIR")
 	config.LoggerPath = os.Getenv("LOGGER_PATH")
 
-	/// Postgres configs
+	// Postgres configs
 	database := os.Getenv("DB_DATABASE")
 	password := os.Getenv("DB_PASSWORD")
 	username := os.Getenv("DB_USERNAME")

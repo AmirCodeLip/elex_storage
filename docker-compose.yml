@@ -67,24 +67,11 @@ services:
     container_name: elex_file_storage
     image: file_storage:1.0.1
     ports:
-      - "50052:50052"
+      - "50053:50053"
     networks:
       - elex_storage_network
-    environment:
-      DB_HOST: elex_postgres_db
-      DB_PORT: 5432
-      DB_DATABASE: file_storage
-      DB_USERNAME: elex_storage
-      DB_PASSWORD: pass1234
-      DB_SCHEMA: public
-      RABBITMQ_HOST: elex_rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: elex_storage
-      RABBITMQ_PASSWORD: pass1234
-      LOGGER_PATH: file_storage.log
-      DRIVE_DISK: bin_files
-      DRIVE_NAME: iran_north_cloud
-      PORT: 50052
+    env_file:
+      - ./docker_app.env
 volumes:
   postgres_data:
 

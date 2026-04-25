@@ -22,4 +22,10 @@ type ConfigEnv struct {
 	FileMetadataGrpcAddr string
 	FileMetadataGrpcHost string
 	FileMetadataGrpcPort string
+	// file_storage configs
+	DriveDisk           string
+	DriveName           string
+	FileStorageHttpAddr string
+	FileStorageHttpHost string
+	FileStorageHttpPort string
 }

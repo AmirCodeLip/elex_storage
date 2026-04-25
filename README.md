@@ -1,53 +1,13 @@
-# Project elex_net
+# Elex Storage Cloud
 
-One Paragraph of project description goes here
 
-## Getting Started
+[![MinIO](logo.png)](https://github.com/AmirCodeLip/elex_storage)
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+elex_storage is a high‑performance, scalable, and fully distributed storage solution designed for modern cloud‑native environments. Built with efficiency and reliability at its core, it provides a robust platform for managing large‑scale data workloads across diverse infrastructures.
 
-## MakeFile
+- ⚡ High performance and low latency  
+- 📈 Horizontally scalable distributed design  
+- ☁️ Cloud‑friendly and infrastructure‑agnostic  
+- 🧩 Lightweight, modular, and easy to integrate  
+- 📜 Open and flexible under the MIT license
 
-Run build make command with tests
-```bash
-make all
-```
-
-Build the application
-```bash
-make build
-```
-
-Run the application
-```bash
-make run
-```
-Create DB container
-```bash
-make docker-run
-```
-
-Shutdown DB Container
-```bash
-make docker-down
-```
-
-DB Integrations Test:
-```bash
-make itest
-```
-
-Live reload the application:
-```bash
-make watch
-```
-
-Run the test suite:
-```bash
-make test
-```
-
-Clean up binary from the last build:
-```bash
-make clean
-```

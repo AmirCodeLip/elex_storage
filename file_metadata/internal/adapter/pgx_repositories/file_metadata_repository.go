@@ -33,7 +33,6 @@ func (repo *FileMetadataRepository) Insert(fileMetadataEntity entities.FileMetad
 	if fileMetadataEntity.DirectoryId == nil {
 		return errors.New("DirectoryId can't be null")
 	}
-	// ToDo Amir Codelip check file with same directory is exist or not
 	fileMetadataEntity.Hash = repo.Hash(fileMetadataEntity)
 	_, insertErr := repo.db.NamedExec(`INSERT INTO files_metadata(id, storage_id, name, file_extension, content_type, size, drive, hash, directory_id) 
 		VALUES (:id, :storage_id, :name, :file_extension, :content_type, :size, :drive, :hash, :directory_id)`,

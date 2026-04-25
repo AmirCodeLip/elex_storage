@@ -27,7 +27,6 @@ FROM alpine:latest
  
 # 6. Copy required files and setting to the final project
 WORKDIR /app
-COPY --from=builder /app/file_storage/.env .env
 COPY --from=builder /app/file_storage/migrations/ migrations/
 
 # Copy binary from builder

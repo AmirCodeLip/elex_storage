@@ -2,13 +2,12 @@ package configs
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"elex_storage/pkg/logger"
+	"elex_storage/pkg/shared_kernel/models"
 
 	"go.uber.org/fx"
 )
@@ -20,12 +19,12 @@ type Server struct {
 	logger  logger.Logger
 }
 
-func NewServer(handler *http.Handler) *Server {
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
+func NewServer(handler *http.Handler, cfg *models.ConfigEnv) *Server {
+	port, _ := strconv.Atoi(cfg.FileStorageHttpPort)
 	return &Server{
 		port: port,
 		server: &http.Server{
-			Addr:         fmt.Sprintf(":%d", port),
+			Addr:         cfg.FileStorageHttpAddr,
 			Handler:      *handler,
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  10 * time.Second,

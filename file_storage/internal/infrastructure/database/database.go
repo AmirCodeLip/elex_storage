@@ -1,8 +1,8 @@
 package database
 
 import (
-	"elex_storage/file_storage/internal/domain"
 	"elex_storage/pkg/logger"
+	"elex_storage/pkg/shared_kernel/models"
 	"fmt"
 	"os"
 
@@ -34,7 +34,7 @@ var (
 	db       *sqlx.DB
 )
 
-func NewDatabase(config *domain.ConfigEnv, logger logger.Logger) *sqlx.DB {
+func NewDatabase(config *models.ConfigEnv, logger logger.Logger) *sqlx.DB {
 	database = os.Getenv("DB_DATABASE")
 	password = os.Getenv("DB_PASSWORD")
 	username = os.Getenv("DB_USERNAME")
@@ -54,7 +54,7 @@ func NewDatabase(config *domain.ConfigEnv, logger logger.Logger) *sqlx.DB {
 	return db
 }
 
-func ApplyMigration(db *sqlx.DB, cfg *domain.ConfigEnv, logger logger.Logger) error {
+func ApplyMigration(db *sqlx.DB, cfg *models.ConfigEnv, logger logger.Logger) error {
 	autoMigrateManager, err := auto_migration.NewAutoMigrateManager(db, cfg.MigrationsDir)
 	if err != nil {
 		logger.Error(err.Error())

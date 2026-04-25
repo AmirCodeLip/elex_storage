@@ -2,7 +2,6 @@ package command_handlers
 
 import (
 	"elex_storage/file_storage/internal/core_utils"
-	"elex_storage/file_storage/internal/domain"
 	"elex_storage/file_storage/internal/domain/entities"
 	"elex_storage/file_storage/internal/domain/messaging/publishers"
 	"elex_storage/file_storage/internal/domain/repositories"
@@ -10,6 +9,7 @@ import (
 	"elex_storage/file_storage/internal/use_case/cqrs/commands"
 	"elex_storage/pkg/logger"
 	"elex_storage/pkg/shared_kernel/event_models"
+	"elex_storage/pkg/shared_kernel/models"
 	"fmt"
 	"os"
 	"time"
@@ -19,13 +19,13 @@ import (
 
 type SaveFileHandler struct {
 	logger           logger.Logger
-	config           *domain.ConfigEnv
+	config           *models.ConfigEnv
 	fileRepository   repositories.FileRepository
 	pathUtil         *core_utils.PathUtil
 	storagePublisher publishers.StoragePublisher
 }
 
-func NewSaveFileHandler(logger logger.Logger, config *domain.ConfigEnv,
+func NewSaveFileHandler(logger logger.Logger, config *models.ConfigEnv,
 	fileRepository repositories.FileRepository, pathUtil *core_utils.PathUtil,
 	storagePublisher publishers.StoragePublisher) *SaveFileHandler {
 	return &SaveFileHandler{logger, config, fileRepository, pathUtil, storagePublisher}

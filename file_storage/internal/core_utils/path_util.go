@@ -2,17 +2,17 @@ package core_utils
 
 import (
 	"bytes"
-	"elex_storage/file_storage/internal/domain"
 	"elex_storage/file_storage/internal/domain/entities"
 	pkg_entities "elex_storage/pkg/shared_kernel/entities"
+	"elex_storage/pkg/shared_kernel/models"
 	"path/filepath"
 )
 
 type PathUtil struct {
-	config *domain.ConfigEnv
+	config *models.ConfigEnv
 }
 
-func NewPathUtil(config *domain.ConfigEnv) *PathUtil {
+func NewPathUtil(config *models.ConfigEnv) *PathUtil {
 	return &PathUtil{config}
 }
 
