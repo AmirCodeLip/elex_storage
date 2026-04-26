@@ -47,31 +47,38 @@ services:
       - elex_storage_network
   elex_identity_service:
     container_name: elex_identity_service
-    image: identity_service:1.0.2
+    image: identity_service:1.0.4
     ports:
       - 50051:50051
     networks:
       - elex_storage_network
     env_file:
       - ./docker_app.env
+    environment:
+      - DB_DATABASE=identity_service
+
   elex_file_metadata:
     container_name: elex_file_metadata
-    image: file_metadata:1.0.2
+    image: file_metadata:1.0.3
     ports:
       - 50052:50052
     networks:
       - elex_storage_network
     env_file:
       - ./docker_app.env
+    environment:
+      - DB_DATABASE=file_metadata
   elex_file_storage:
     container_name: elex_file_storage
-    image: file_storage:1.0.1
+    image: file_storage:1.0.3
     ports:
       - "50053:50053"
     networks:
       - elex_storage_network
     env_file:
       - ./docker_app.env
+    environment:
+      - DB_DATABASE=file_storage
 volumes:
   postgres_data:
 

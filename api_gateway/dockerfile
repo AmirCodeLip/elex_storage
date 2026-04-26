@@ -1,6 +1,6 @@
 FROM golang:1.24-alpine AS builder
 
-ENV GOPROXY=https://mirror-go.runflare.com
+ENV GOPROXY=https://package-mirror.liara.ir/repository/go/
 
 # 1. COPY ONLY go.mod and go.sum files first
 WORKDIR /app

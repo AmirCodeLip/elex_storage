@@ -26,7 +26,7 @@ func RegisterAndStartGRPCServer(
 	// Hook into the Fx Application Lifecycle
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			listener, err := net.Listen("tcp", cfg.IdentityServiceGrpcAddr)
+			listener, err := net.Listen("tcp", cfg.IdentityServiceGrpcUrl.Address)
 			if err != nil {
 				return err
 			}

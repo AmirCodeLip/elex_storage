@@ -3,7 +3,6 @@ package configs
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"elex_storage/pkg/logger"
@@ -20,11 +19,10 @@ type Server struct {
 }
 
 func NewServer(handler *http.Handler, cfg *models.ConfigEnv) *Server {
-	port, _ := strconv.Atoi(cfg.ApiGatewayHttpPort)
 	return &Server{
-		port: port,
+		port: cfg.ApiGatewayHttpUrl.Port,
 		server: &http.Server{
-			Addr:         cfg.ApiGatewayHttpAddr,
+			Addr:         cfg.ApiGatewayHttpUrl.Address,
 			Handler:      *handler,
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  10 * time.Second,

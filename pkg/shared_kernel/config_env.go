@@ -15,14 +15,11 @@ import (
 )
 
 func setIdentityService(config *models.ConfigEnv) error {
-	grpcAddr := os.Getenv("IDENTITY_SERVICE_Grpc_Addr")
-	config.IdentityServiceGrpcAddr = grpcAddr
-	host, port, err := parseAddress(grpcAddr)
-	config.IdentityServiceGrpcHost = host
-	config.IdentityServiceGrpcPort = fmt.Sprintf("%d", port)
+	grpcUrl, err := parseAddress(os.Getenv("IDENTITY_SERVICE_Grpc_Url"))
+	config.IdentityServiceGrpcUrl = grpcUrl
 	if err != nil {
 		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse IDENTITY_SERVICE_Grpc_Addr is not valid host %s", grpcAddr)), err)
+			fmt.Sprintf("Can't parse IDENTITY_SERVICE_Grpc_Addr is not valid host %s", grpcUrl.FullAddress)), err)
 	}
 	// Set AccessTokenDuration
 	val1 := os.Getenv("ACCESS_TOKEN_DURATION")
@@ -41,42 +38,33 @@ func setIdentityService(config *models.ConfigEnv) error {
 }
 
 func setApiGatewayService(config *models.ConfigEnv) error {
-	api_gateway_http_addr := os.Getenv("API_GATEWAY_HTTP_Addr")
-	config.ApiGatewayHttpAddr = api_gateway_http_addr
-	host, port, err := parseAddress(api_gateway_http_addr)
-	config.ApiGatewayHttpHost = host
-	config.ApiGatewayHttpPort = fmt.Sprintf("%d", port)
+	apiGatewayHttpUrl, err := parseAddress(os.Getenv("API_GATEWAY_HTTP_URL"))
+	config.ApiGatewayHttpUrl = apiGatewayHttpUrl
 	if err != nil {
 		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", config.ApiGatewayHttpAddr)), err)
+			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", apiGatewayHttpUrl.FullAddress)), err)
 	}
 	return nil
 }
 
 func setFileStorageService(config *models.ConfigEnv) error {
-	file_storage_grpc_addr := os.Getenv("FILE_STORAGE_HTTP_Addr")
-	config.FileStorageHttpAddr = file_storage_grpc_addr
-	host, port, err := parseAddress(file_storage_grpc_addr)
-	config.FileStorageHttpHost = host
-	config.FileStorageHttpPort = fmt.Sprintf("%d", port)
+	fileStorageHttpUrl, err := parseAddress(os.Getenv("FILE_STORAGE_HTTP_URL"))
+	config.FileStorageHttpUrl = fileStorageHttpUrl
 	if err != nil {
 		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse FileMetadataServiceAddr is not valid host %s", config.FileMetadataGrpcAddr)), err)
+			fmt.Sprintf("Can't parse FileMetadataServiceAddr is not valid host %s", fileStorageHttpUrl.FullAddress)), err)
 	}
 	return nil
 }
 
 func setFileMetadataService(config *models.ConfigEnv) error {
-	file_metadata_grpc_addr := os.Getenv("FILE_META_DATA_GRPC_Addr")
 	config.DriveDisk = os.Getenv("DRIVE_DISK")
 	config.DriveName = os.Getenv("DRIVE_NAME")
-	config.FileMetadataGrpcAddr = file_metadata_grpc_addr
-	host, port, err := parseAddress(file_metadata_grpc_addr)
-	config.FileMetadataGrpcHost = host
-	config.FileMetadataGrpcPort = fmt.Sprintf("%d", port)
+	fileMetadataGrpcUrl, err := parseAddress(os.Getenv("FILE_META_DATA_GRPC_URL"))
+	config.FileMetadataGrpcUrl = fileMetadataGrpcUrl
 	if err != nil {
 		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", config.FileMetadataGrpcAddr)), err)
+			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", fileMetadataGrpcUrl.FullAddress)), err)
 	}
 	return nil
 }
@@ -159,20 +147,53 @@ func TestConfigEnv() *models.ConfigEnv {
 	return &config
 }
 
-func parseAddress(addr string) (host string, port int, err error) {
+func parseAddress(addr string) (models.Url, error) {
+	result := models.Url{
+		Protocol: "http", // default protocol
+		Port:     80,     // default port
+	}
+
+	// Check for protocol
+	if strings.Contains(addr, "://") {
+		parts := strings.SplitN(addr, "://", 2)
+		result.Protocol = parts[0]
+		addr = parts[1]
+	}
+
+	// Remove trailing slash
+	addr = strings.TrimSuffix(addr, "/")
+
+	// Parse host and port
 	if strings.Contains(addr, ":") {
 		parts := strings.Split(addr, ":")
-		host = parts[0]
-		port, err = strconv.Atoi(parts[1])
-		return
+		result.Host = parts[0]
+		port, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return models.Url{}, err
+		}
+		result.Port = port
+	} else {
+		// Check if it's just a port number
+		if port, err := strconv.Atoi(addr); err == nil {
+			result.Port = port
+			result.Host = "localhost"
+		} else {
+			// It's just a host
+			result.Host = addr
+		}
 	}
 
-	// no colon
-	if p, err := strconv.Atoi(addr); err == nil {
-		// it's a port
-		return "", p, nil
+	// Build full URL
+	if result.Port == 80 && result.Protocol == "http" {
+		result.FullAddress = fmt.Sprintf("%s://%s", result.Protocol, result.Host)
+		result.Address = result.Host
+	} else if result.Port == 443 && result.Protocol == "https" {
+		result.FullAddress = fmt.Sprintf("%s://%s", result.Protocol, result.Host)
+		result.Address = fmt.Sprintf("%s", result.Host)
+	} else {
+		result.FullAddress = fmt.Sprintf("%s://%s:%d", result.Protocol, result.Host, result.Port)
+		result.Address = fmt.Sprintf("%s:%d", result.Host, result.Port)
 	}
 
-	// it's a host
-	return addr, 0, nil
+	return result, nil
 }

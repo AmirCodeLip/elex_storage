@@ -4,6 +4,7 @@ import (
 	"elex_storage/pkg/shared_kernel/models"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -14,7 +15,11 @@ type Logger interface {
 
 func NewLogger(cfg *models.ConfigEnv) Logger {
 	// Clean logger to support linux
-	loggerPath := filepath.Clean(cfg.LoggerPath)
+	parts := strings.Split(cfg.LoggerPath, "\\")
+	loggerPath := ""
+	for _, p := range parts {
+		loggerPath = filepath.Join(loggerPath, p)
+	}
 	dir := filepath.Dir(loggerPath)
 
 	// Create logger directories

@@ -2,6 +2,7 @@ package http_clients
 
 import (
 	"elex_storage/api_gateway/internal/domain/client_repositories"
+	"elex_storage/pkg/shared_kernel/models"
 	"elex_storage/pkg/shared_kernel/utils"
 	"net/http"
 	"time"
@@ -11,10 +12,9 @@ type fileStorageClient struct {
 	client *utils.HttpApiClient
 }
 
-func NewFileStorageClient() client_repositories.FileStorageRepository {
-	// ToDo AmirCodelip
+func NewFileStorageClient(cfg *models.ConfigEnv) client_repositories.FileStorageRepository {
 	client := fileStorageClient{
-		utils.NewAPIClient("http://localhost:50052", 2*time.Minute),
+		utils.NewAPIClient(cfg.FileStorageHttpUrl.FullAddress, 2*time.Minute),
 	}
 	return &client
 }

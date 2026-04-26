@@ -1,6 +1,6 @@
 FROM golang:1.26-alpine AS builder
 
-ENV GOPROXY=https://hub.megan.ir/go
+ENV GOPROXY=https://package-mirror.liara.ir/repository/go/
 
 # 1. COPY ONLY go.mod and go.sum files first
 WORKDIR /app
@@ -27,7 +27,6 @@ FROM alpine:latest
  
 # 6. Copy required files and setting to the final project
 WORKDIR /app
-COPY --from=builder /app/file_metadata/.env .env
 COPY --from=builder /app/file_metadata/migrations/ migrations/
 
 # Copy binary from builder
