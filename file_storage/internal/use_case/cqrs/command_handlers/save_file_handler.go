@@ -10,7 +10,6 @@ import (
 	"elex_storage/pkg/logger"
 	"elex_storage/pkg/shared_kernel/event_models"
 	"elex_storage/pkg/shared_kernel/models"
-	"fmt"
 	"os"
 	"time"
 
@@ -32,50 +31,105 @@ func NewSaveFileHandler(logger logger.Logger, config *models.ConfigEnv,
 }
 
 func (u *SaveFileHandler) Handle(cmd commands.SaveFileCommand) error {
-	newFileId := uuid.New()
-
-	// ToDo Amir codelip encrypt file and check it's content type
-	contentType := u.pathUtil.GetContentType(cmd.Data)
-
-	// First step: Insert the file into the database.
-	fileEntity := entities.FileEntity{Id: newFileId, Name: cmd.Name, CreatedAt: time.Now(), ContentType: contentType}
-	insertErr := u.fileRepository.Insert(fileEntity)
-	if insertErr != nil {
-		u.logger.Error(insertErr.Error())
-		return insertErr
+	// Step 0: Guard clause for nil pointer
+	if cmd.Data == nil {
+		u.logger.Error("cmd.Data is nil")
+		return cqrs.SaveFileErr(cmd.Name)
 	}
 
-	// Second step: Get the file path and check whether it exists or not.
-	path, fullPath, _ := u.pathUtil.GetPath(fileEntity)
-	_, dirErr := os.Stat(path)
-	if dirErr != nil {
-		// Create a directory if it does not exist
-		if os.IsNotExist(dirErr) {
-			err := os.MkdirAll(path, 0755)
-			if err != nil {
-				fmt.Println(err)
-				return cqrs.InvalidFileErr
-			}
+	checksum := core_utils.GetContentHash(*cmd.Data)
+	var key []byte = nil
 
-		} else {
-			u.logger.Error(dirErr.Error())
-			return cqrs.InvalidFileErr
+	// Step 1: Check if file with same hash exists
+	fileEntity, err := u.fileRepository.GetByHash(checksum)
+	if err != nil {
+		u.logger.Error(err.Error())
+		return cqrs.SaveFileErr(cmd.Name)
+	}
+
+	if fileEntity != nil {
+		// File exists in storage.
+	} else {
+		newFileId := uuid.New()
+		contentType := u.pathUtil.GetContentType(cmd.Data)
+
+		key, err = core_utils.GenerateNewKey()
+		if err != nil {
+			u.logger.Error(err.Error())
+			return cqrs.SaveFileErr(cmd.Name)
 		}
+
+		fileEntity = &entities.FileEntity{
+			Id:          newFileId,
+			Name:        cmd.Name,
+			CreatedAt:   time.Now(),
+			ContentType: contentType,
+			Checksum:    checksum,
+		}
+
+		// Step 2: Get the file path and create directory if needed (Moved BEFORE DB insert to prevent dirty DB state)
+		path, fullPath := u.pathUtil.GetPath(*fileEntity)
+
+		if _, dirErr := os.Stat(path); os.IsNotExist(dirErr) {
+			if mkdirErr := os.MkdirAll(path, 0755); mkdirErr != nil {
+				u.logger.Error(mkdirErr.Error())
+				return cqrs.SavePathErr(fullPath)
+			}
+		} else if dirErr != nil {
+			u.logger.Error(dirErr.Error())
+			return cqrs.SavePathErr(fullPath)
+		}
+
+		// Step 3: Encrypt content of the file.
+		content, encErr := core_utils.EncryptContent(*cmd.Data, key)
+		if encErr != nil {
+			u.logger.Error(encErr.Error())
+			return cqrs.SaveFileErr(cmd.Name)
+		}
+
+		// Step 4: Start the database transaction
+		tx, err := u.fileRepository.BeginTransaction() // Assuming your repo has this
+		if err != nil {
+			u.logger.Error(err.Error())
+			return cqrs.SaveFileErr(fullPath)
+		}
+
+		// It guarantees the DB is rolled back if a panic occurs or we return early.
+		defer tx.Rollback()
+
+		// Step 5: Insert the file into the database.
+		err = u.fileRepository.Insert(fileEntity, tx)
+		if err != nil {
+			u.logger.Error(err.Error())
+			return err
+		}
+
+		// Step 6: Save the file to the disk.
+		errSaveFile := os.WriteFile(fullPath, content, 0644)
+		if errSaveFile != nil {
+			u.logger.Error(errSaveFile.Error())
+			return cqrs.SavePathErr(fullPath)
+		}
+
+		// 7. Everything succeeded, commit the database transaction
+		if commitErr := tx.Commit(); commitErr != nil {
+			u.logger.Error(commitErr.Error())
+			// Edge case: If DB commit fails AFTER file is written, delete the orphaned file
+			os.Remove(fullPath)
+			return cqrs.SaveFileErr(fullPath)
+		}
+
 	}
 
-	// Third step: Save the file to the disk.
-	errSaveFile := os.WriteFile(fullPath, *cmd.Data, 0644)
-	if errSaveFile != nil {
-		u.logger.Error(errSaveFile.Error())
-		return cqrs.InvalidFileErr
-	}
-
+	// Step 6: Publish Event
 	u.storagePublisher.PublishFileCreated(event_models.FileCreated{
-		Id:          newFileId,
+		Id:          fileEntity.Id,
 		Name:        cmd.Name,
-		ContentType: contentType,
+		ContentType: fileEntity.ContentType,
 		Size:        len(*cmd.Data),
 		Drive:       u.config.DriveName,
+		Checksum:    checksum,
+		Key:         key, // Make sure 'key' isn't expected to be populated for existing files if left nil
 	})
 
 	return nil

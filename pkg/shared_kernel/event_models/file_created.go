@@ -12,4 +12,6 @@ type FileCreated struct {
 	ContentType entities.FileContentType `json:"content-type"`
 	Size        int                      `json:"size"`
 	Drive       string                   `json:"drive"`
+	Checksum    string                   `json:"checksum"`
+	Key         []byte                   `json:"key"`
 }

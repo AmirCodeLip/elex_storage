@@ -58,7 +58,13 @@ func setFileStorageService(config *models.ConfigEnv) error {
 }
 
 func setFileMetadataService(config *models.ConfigEnv) error {
-	config.DriveDisk = os.Getenv("DRIVE_DISK")
+
+	// Clean DriveDisk to support linux
+	parts := strings.Split(os.Getenv("DRIVE_DISK"), "\\")
+	config.DriveDisk = ""
+	for _, p := range parts {
+		config.DriveDisk = filepath.Join(config.DriveDisk, p)
+	}
 	config.DriveName = os.Getenv("DRIVE_NAME")
 	fileMetadataGrpcUrl, err := parseAddress(os.Getenv("FILE_META_DATA_GRPC_URL"))
 	config.FileMetadataGrpcUrl = fileMetadataGrpcUrl

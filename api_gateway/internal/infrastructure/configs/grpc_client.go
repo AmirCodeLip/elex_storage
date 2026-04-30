@@ -10,14 +10,14 @@ import (
 
 func NewGRPCClient(cfg *models.ConfigEnv) (grpc_service.UserServiceClient, grpc_service.FileMetadataServiceClient, error) {
 	identityConn, err := grpc.NewClient(
-		cfg.IdentityServiceGrpcUrl.FullAddress,
+		cfg.IdentityServiceGrpcUrl.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		return nil, nil, err
 	}
 	fileMetadata, err := grpc.NewClient(
-		cfg.FileMetadataGrpcUrl.FullAddress,
+		cfg.FileMetadataGrpcUrl.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

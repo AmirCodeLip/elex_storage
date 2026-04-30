@@ -16,15 +16,15 @@ func NewPathUtil(config *models.ConfigEnv) *PathUtil {
 	return &PathUtil{config}
 }
 
-func (pathUtil *PathUtil) GetPath(fileEntity entities.FileEntity) (path string, fullPath string, name string) {
+func (pathUtil *PathUtil) GetPath(fileEntity entities.FileEntity) (path string, fullPath string) {
 	path = filepath.Join(
 		pathUtil.config.DriveDisk,
 		fileEntity.CreatedAt.Format("2006"),
 		fileEntity.CreatedAt.Format("01"),
 	)
-	name = fileEntity.Id.String() + ".esx"
+	name := fileEntity.Id.String() + ".esx"
 	fullPath = filepath.Join(path, name)
-	return path, fullPath, name
+	return path, fullPath
 }
 
 func (pathUtil *PathUtil) GetContentType(data *[]byte) pkg_entities.FileContentType {

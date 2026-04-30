@@ -8,8 +8,10 @@ import (
 )
 
 type FileEntity struct {
-	Id          uuid.UUID
-	Name        string
-	CreatedAt   time.Time
-	ContentType entities.FileContentType
+	Id          uuid.UUID                `db:"id"`
+	Name        string                   `db:"name"`
+	CreatedAt   time.Time                `db:"created_at"`
+	ContentType entities.FileContentType `db:"content_type"`
+	Checksum    string                   `db:"checksum"`
+	IsMounted   string                   `db:"is_mounted"`
 }

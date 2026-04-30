@@ -1,0 +1,1 @@
+Alter Table FILES ADD COLUMN checksum VARCHAR(255) NOT NULL

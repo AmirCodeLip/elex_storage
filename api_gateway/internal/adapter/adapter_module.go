@@ -46,8 +46,8 @@ func RegisterHttpRoutes(httpHandler *http_handlers.HttpHandler, fileStorageRepos
 	r.HandlerFunc(http.MethodPost, "/users/register", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.UserServiceClient.Register))
 
 	// file_metadata routes
-	r.HandlerFunc(http.MethodGet, "/directories", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.FileMetadataServiceClient.GetDirectories))
-	r.HandlerFunc(http.MethodPost, "/directories", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.FileMetadataServiceClient.CreateDirectory))
+	r.HandlerFunc(http.MethodPost, "/directories/get", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.FileMetadataServiceClient.GetDirectories))
+	r.HandlerFunc(http.MethodPost, "/directories/create", http_handlers.WrapGrpcFunc(httpHandler, httpHandler.FileMetadataServiceClient.CreateDirectory))
 
 	// file_storage routes
 	r.HandlerFunc(http.MethodPost, "/file/upload", http_handlers.HttpProxyFunc(httpHandler, fileStorageRepository.Upload))
