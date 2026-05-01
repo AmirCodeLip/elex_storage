@@ -6,8 +6,6 @@ import (
 	"elex_storage/file_metadata/internal/use_case/cqrs"
 	"elex_storage/file_metadata/internal/use_case/cqrs/commands"
 	"elex_storage/pkg/logger"
-	"elex_storage/pkg/shared_kernel/models"
-	"errors"
 	"path/filepath"
 	"strings"
 
@@ -27,30 +25,61 @@ func NewFileCreatedHandler(logger logger.Logger,
 }
 
 func (u *FileCreatedHandler) Handle(cmd commands.FileCreatedCommand) error {
-	newFileId := uuid.New()
+	// Step 1: Map event into entity file
 	var fileMetadataEntity entities.FileMetadataEntity
-	// Map event into entity file
-	copier.Copy(&fileMetadataEntity, &cmd.FileEntity)
-	fileMetadataEntity.Id = newFileId
-	// Set Storage id into storage_id
+	if err := copier.Copy(&fileMetadataEntity, &cmd.FileEntity); err != nil {
+		u.logger.Error("Failed to copy file entity: " + err.Error())
+		return err
+	}
+
+	// Step 2: Assign the data
+	fileMetadataEntity.Id = uuid.New()
 	fileMetadataEntity.StorageId = cmd.FileEntity.Id
+
+	// Extract the file extension and clean the file name
 	ext := filepath.Ext(fileMetadataEntity.Name)
 	fileMetadataEntity.Name = strings.TrimSuffix(fileMetadataEntity.Name, ext)
 	fileMetadataEntity.FileExtension = ext
-	if fileMetadataEntity.DirectoryId == nil {
-		root, err := u.directoryMetadataRepository.GetRoot()
-		if err != nil {
-			return err
-		}
-		fileMetadataEntity.DirectoryId = &root.Id
+
+	// Step 3: Set directory (default to root if not provided)
+	if err := u.directoryMetadataRepository.SetDirectoryId(&fileMetadataEntity); err != nil {
+		u.logger.Error("Failed to set directory ID: " + err.Error())
+		return err
 	}
-	err := u.fileMetadataRepository.Insert(fileMetadataEntity)
+
+	// Step 4: Execute insert operation with transaction
+	tx, err := u.fileMetadataRepository.BeginTransaction()
 	if err != nil {
-		var commonErr *models.CommonError
-		if errors.As(err, &commonErr) {
-			return commonErr
+		u.logger.Error("Failed to begin transaction: " + err.Error())
+		return cqrs.SaveFileMetadataErr()
+	}
+
+	// Ensure transaction is rolled back on error
+	defer func() {
+		if p := recover(); p != nil {
+			_ = u.fileMetadataRepository.RollbackTransaction(tx)
+			panic(p) // Re-panic after rollback
 		}
-		u.logger.Info(err.Error())
+	}()
+
+	// Insert the file
+	if err = u.fileMetadataRepository.Insert(fileMetadataEntity, tx); err != nil {
+		// Rollback transaction on insert error
+		if rbErr := u.fileMetadataRepository.RollbackTransaction(tx); rbErr != nil {
+			u.logger.Error("Failed to rollback transaction: " + rbErr.Error())
+		}
+
+		if isCommonErr, err := logger.HandleCommonErr(err, u.logger); err != nil {
+			if isCommonErr {
+				return err
+			}
+			return cqrs.SaveFileMetadataErr()
+		}
+	}
+
+	// Commit the transaction
+	if err = u.fileMetadataRepository.CommitTransaction(tx); err != nil {
+		u.logger.Error("Failed to commit transaction: " + err.Error())
 		return cqrs.SaveFileMetadataErr()
 	}
 	return nil

@@ -11,7 +11,6 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 var InvalidContentErr = errors.New("Invalid content is passed")
@@ -20,6 +19,7 @@ type FileMetadataService struct {
 	grpc_service.UnimplementedFileMetadataServiceServer
 	createDirectoryHandler *command_handlers.CreateDirectoryHandler
 	getDirectoriesHandler  *command_handlers.GetDirectoriesHandler
+	getDriveHandler        *command_handlers.GetDriveHandler
 	logger                 logger.Logger
 }
 
@@ -27,14 +27,14 @@ func NewFileMetadataService(getDirectoriesHandler *command_handlers.GetDirectori
 	return &FileMetadataService{getDirectoriesHandler: getDirectoriesHandler, createDirectoryHandler: createDirectoryHandler, logger: logger}
 }
 
-func (f *FileMetadataService) GetDirectories(context.Context, *emptypb.Empty) (*grpc_service.DirectoriesResponse, error) {
+func (f *FileMetadataService) GetDirectories(context.Context, *grpc_service.GetDirectoriesRequest) (*grpc_service.StorageItemsResponse, error) {
 	dirs, err := f.getDirectoriesHandler.Handle()
 	if err != nil {
 		f.logger.Error(err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	response := grpc_service.DirectoriesResponse{}
+	response := grpc_service.StorageItemsResponse{}
 	err = shared_kernel.MapToGrpc(&response.Directories, &dirs)
 	if err != nil {
 		f.logger.Error(err.Error())
@@ -59,6 +59,25 @@ func (f *FileMetadataService) CreateDirectory(ctx context.Context, req *grpc_ser
 	if err != nil {
 		f.logger.Error(err.Error())
 		return nil, status.Error(codes.Aborted, err.Error())
+	}
+	return &response, nil
+}
+
+func (f *FileMetadataService) GetStorageItems(ctx context.Context, req *grpc_service.GetStorageItemsRequest) (*grpc_service.StorageItemsResponse, error) {
+	var getDriveCommand commands.GetDriveCommand
+	err := shared_kernel.MapToGrpc(&getDriveCommand, &req)
+
+	dirs, err := f.getDriveHandler.Handle(getDriveCommand)
+	if err != nil {
+		f.logger.Error(err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	response := grpc_service.StorageItemsResponse{}
+	err = shared_kernel.MapToGrpc(&response.Directories, &dirs)
+	if err != nil {
+		f.logger.Error(err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	return &response, nil
 }

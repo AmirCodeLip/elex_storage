@@ -10,6 +10,8 @@ import (
 	"elex_storage/file_metadata/internal/domain/entities"
 	domain_errors "elex_storage/file_metadata/internal/domain/errors"
 	"elex_storage/file_metadata/internal/domain/repositories"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type MockFileMetadataRepository struct {
@@ -24,7 +26,19 @@ func CreateMockFileMetadataRepository(logger logger.Logger) repositories.FileMet
 		files:  make(map[string]*entities.FileMetadataEntity)}
 }
 
-func (repo *MockFileMetadataRepository) Insert(fileMetadataEntity entities.FileMetadataEntity) error {
+func (repo *MockFileMetadataRepository) BeginTransaction() (*sqlx.Tx, error) {
+	return nil, nil
+}
+
+func (repo *MockFileMetadataRepository) RollbackTransaction(tx *sqlx.Tx) error {
+	return nil
+}
+
+func (repo *MockFileMetadataRepository) CommitTransaction(tx *sqlx.Tx) error {
+	return nil
+}
+
+func (repo *MockFileMetadataRepository) Insert(fileMetadataEntity entities.FileMetadataEntity, tx *sqlx.Tx) error {
 	if fileMetadataEntity.DirectoryId == nil {
 		return errors.New("DirectoryId can't be null")
 	}

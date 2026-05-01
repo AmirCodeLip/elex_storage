@@ -56,7 +56,6 @@ services:
       - ./docker_app.env
     environment:
       - DB_DATABASE=identity_service
-
   elex_file_metadata:
     container_name: elex_file_metadata
     image: file_metadata:1.0.3
@@ -70,7 +69,7 @@ services:
       - DB_DATABASE=file_metadata
   elex_file_storage:
     container_name: elex_file_storage
-    image: file_storage:1.0.3
+    image: file_storage:1.0.4
     ports:
       - "50053:50053"
     networks:

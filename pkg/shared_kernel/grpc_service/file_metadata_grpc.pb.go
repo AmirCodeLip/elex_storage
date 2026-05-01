@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,14 +21,16 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	FileMetadataService_GetDirectories_FullMethodName  = "/file_metadata.FileMetadataService/GetDirectories"
 	FileMetadataService_CreateDirectory_FullMethodName = "/file_metadata.FileMetadataService/CreateDirectory"
+	FileMetadataService_GetStorageItems_FullMethodName = "/file_metadata.FileMetadataService/GetStorageItems"
 )
 
 // FileMetadataServiceClient is the client API for FileMetadataService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileMetadataServiceClient interface {
-	GetDirectories(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DirectoriesResponse, error)
+	GetDirectories(ctx context.Context, in *GetDirectoriesRequest, opts ...grpc.CallOption) (*StorageItemsResponse, error)
 	CreateDirectory(ctx context.Context, in *CreateDirectoryRequest, opts ...grpc.CallOption) (*DirectoryInfo, error)
+	GetStorageItems(ctx context.Context, in *GetStorageItemsRequest, opts ...grpc.CallOption) (*StorageItemsResponse, error)
 }
 
 type fileMetadataServiceClient struct {
@@ -40,9 +41,9 @@ func NewFileMetadataServiceClient(cc grpc.ClientConnInterface) FileMetadataServi
 	return &fileMetadataServiceClient{cc}
 }
 
-func (c *fileMetadataServiceClient) GetDirectories(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*DirectoriesResponse, error) {
+func (c *fileMetadataServiceClient) GetDirectories(ctx context.Context, in *GetDirectoriesRequest, opts ...grpc.CallOption) (*StorageItemsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DirectoriesResponse)
+	out := new(StorageItemsResponse)
 	err := c.cc.Invoke(ctx, FileMetadataService_GetDirectories_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -60,12 +61,23 @@ func (c *fileMetadataServiceClient) CreateDirectory(ctx context.Context, in *Cre
 	return out, nil
 }
 
+func (c *fileMetadataServiceClient) GetStorageItems(ctx context.Context, in *GetStorageItemsRequest, opts ...grpc.CallOption) (*StorageItemsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StorageItemsResponse)
+	err := c.cc.Invoke(ctx, FileMetadataService_GetStorageItems_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FileMetadataServiceServer is the server API for FileMetadataService service.
 // All implementations must embed UnimplementedFileMetadataServiceServer
 // for forward compatibility.
 type FileMetadataServiceServer interface {
-	GetDirectories(context.Context, *emptypb.Empty) (*DirectoriesResponse, error)
+	GetDirectories(context.Context, *GetDirectoriesRequest) (*StorageItemsResponse, error)
 	CreateDirectory(context.Context, *CreateDirectoryRequest) (*DirectoryInfo, error)
+	GetStorageItems(context.Context, *GetStorageItemsRequest) (*StorageItemsResponse, error)
 	mustEmbedUnimplementedFileMetadataServiceServer()
 }
 
@@ -76,11 +88,14 @@ type FileMetadataServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedFileMetadataServiceServer struct{}
 
-func (UnimplementedFileMetadataServiceServer) GetDirectories(context.Context, *emptypb.Empty) (*DirectoriesResponse, error) {
+func (UnimplementedFileMetadataServiceServer) GetDirectories(context.Context, *GetDirectoriesRequest) (*StorageItemsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDirectories not implemented")
 }
 func (UnimplementedFileMetadataServiceServer) CreateDirectory(context.Context, *CreateDirectoryRequest) (*DirectoryInfo, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateDirectory not implemented")
+}
+func (UnimplementedFileMetadataServiceServer) GetStorageItems(context.Context, *GetStorageItemsRequest) (*StorageItemsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetStorageItems not implemented")
 }
 func (UnimplementedFileMetadataServiceServer) mustEmbedUnimplementedFileMetadataServiceServer() {}
 func (UnimplementedFileMetadataServiceServer) testEmbeddedByValue()                             {}
@@ -104,7 +119,7 @@ func RegisterFileMetadataServiceServer(s grpc.ServiceRegistrar, srv FileMetadata
 }
 
 func _FileMetadataService_GetDirectories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(GetDirectoriesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -116,7 +131,7 @@ func _FileMetadataService_GetDirectories_Handler(srv interface{}, ctx context.Co
 		FullMethod: FileMetadataService_GetDirectories_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileMetadataServiceServer).GetDirectories(ctx, req.(*emptypb.Empty))
+		return srv.(FileMetadataServiceServer).GetDirectories(ctx, req.(*GetDirectoriesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -139,6 +154,24 @@ func _FileMetadataService_CreateDirectory_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FileMetadataService_GetStorageItems_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStorageItemsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileMetadataServiceServer).GetStorageItems(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FileMetadataService_GetStorageItems_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileMetadataServiceServer).GetStorageItems(ctx, req.(*GetStorageItemsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FileMetadataService_ServiceDesc is the grpc.ServiceDesc for FileMetadataService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -153,6 +186,10 @@ var FileMetadataService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateDirectory",
 			Handler:    _FileMetadataService_CreateDirectory_Handler,
+		},
+		{
+			MethodName: "GetStorageItems",
+			Handler:    _FileMetadataService_GetStorageItems_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

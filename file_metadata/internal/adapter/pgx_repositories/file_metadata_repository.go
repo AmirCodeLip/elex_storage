@@ -23,19 +23,33 @@ func CreateFileMetadataRepository(logger logger.Logger, db *sqlx.DB) repositorie
 	return &FileMetadataRepository{logger: logger, db: db}
 }
 
+func (repo *FileMetadataRepository) BeginTransaction() (*sqlx.Tx, error) {
+	tx, err := repo.db.Beginx()
+	return tx, err
+}
+
+func (repo *FileMetadataRepository) RollbackTransaction(tx *sqlx.Tx) error {
+	return tx.Rollback()
+}
+
+func (repo *FileMetadataRepository) CommitTransaction(tx *sqlx.Tx) error {
+	return tx.Commit()
+}
+
 func (repo *FileMetadataRepository) GetFiles() (*[]entities.FileMetadataEntity, error) {
 	var files []entities.FileMetadataEntity
 	err := repo.db.Select(&files, "SELECT * FROM files_metadata")
 	return &files, err
 }
 
-func (repo *FileMetadataRepository) Insert(fileMetadataEntity entities.FileMetadataEntity) error {
+func (repo *FileMetadataRepository) Insert(fileMetadataEntity entities.FileMetadataEntity, tx *sqlx.Tx) error {
 	if fileMetadataEntity.DirectoryId == nil {
 		return errors.New("DirectoryId can't be null")
 	}
 	fileMetadataEntity.Hash = repo.Hash(fileMetadataEntity)
-	_, insertErr := repo.db.NamedExec(`INSERT INTO files_metadata(id, storage_id, name, file_extension, content_type, size, drive, hash, directory_id) 
-		VALUES (:id, :storage_id, :name, :file_extension, :content_type, :size, :drive, :hash, :directory_id)`,
+	_, insertErr := tx.NamedExec(
+		`INSERT INTO files_metadata(id, storage_id, name, file_extension, content_type, size, drive, hash, directory_id, checksum, encryption_key) 
+		VALUES (:id, :storage_id, :name, :file_extension, :content_type, :size, :drive, :hash, :directory_id, :checksum, :encryption_key)`,
 		fileMetadataEntity,
 	)
 	if insertErr != nil {

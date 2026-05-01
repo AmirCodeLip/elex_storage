@@ -6,4 +6,5 @@ type DirectoryMetadataRepository interface {
 	Insert(directoryMetadataEntity *entities.DirectoryMetadataEntity) error
 	GetRoot() (*entities.DirectoryMetadataEntity, error)
 	GetDirectories() (*[]entities.DirectoryMetadataEntity, error)
+	SetDirectoryId(fileMetadataEntity *entities.FileMetadataEntity) error
 }

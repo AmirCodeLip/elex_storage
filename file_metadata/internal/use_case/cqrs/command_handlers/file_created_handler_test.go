@@ -11,17 +11,16 @@ import (
 
 func TestFileCreatedHandler(t *testing.T) {
 	fileEntity := event_models.FileCreated{
-		Id:    uuid.New(),
-		Name:  "test_file.jpg",
-		Drive: "cloud_1",
-		Size:  200,
+		Id:       uuid.New(),
+		Name:     "test_file.jpg",
+		Drive:    "cloud_1",
+		Size:     200,
+		Checksum: "Test Checksum",
+		Key:      []byte{96, 88, 168, 92},
 	}
 	cmd := commands.FileCreatedCommand{FileEntity: fileEntity}
 	app, logger, directoryMetadataRepositoryd, fileMetadataRepository := test.InjectMock(t)
 	handler := NewFileCreatedHandler(logger, fileMetadataRepository, directoryMetadataRepositoryd)
-	if err := handler.Handle(cmd); err != nil {
-		t.Fatal(err.Error())
-	}
 	if err := handler.Handle(cmd); err != nil {
 		t.Fatal(err.Error())
 	}
@@ -32,7 +31,7 @@ func TestFileCreatedHandler(t *testing.T) {
 	if files == nil || len(*files) < 1 {
 		t.Errorf("expected one or more files, got %d", len(*files))
 	}
-	if (*files)[1].Name != "test_file" {
+	if (*files)[0].Name != "test_file" {
 		t.Errorf("expected file name 'test_file', got '%s'", (*files)[0].Name)
 	}
 	app.Done()

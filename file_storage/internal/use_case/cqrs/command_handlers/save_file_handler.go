@@ -88,7 +88,7 @@ func (u *SaveFileHandler) Handle(cmd commands.SaveFileCommand) error {
 		}
 
 		// Step 4: Start the database transaction
-		tx, err := u.fileRepository.BeginTransaction() // Assuming your repo has this
+		tx, err := u.fileRepository.BeginTransaction()
 		if err != nil {
 			u.logger.Error(err.Error())
 			return cqrs.SaveFileErr(fullPath)

@@ -83,6 +83,25 @@ func (repo *DirectoryMetadataRepository) GetRoot() (*entities.DirectoryMetadataE
 	return &root, nil
 }
 
+// setDirectoryId sets the directory ID for the file, defaulting to root if nil
+func (repo *DirectoryMetadataRepository) SetDirectoryId(fileMetadataEntity *entities.FileMetadataEntity) error {
+	if fileMetadataEntity.DirectoryId != nil {
+		return nil
+	}
+
+	root, err := repo.GetRoot()
+	if err != nil {
+		return fmt.Errorf("failed to get root directory: %w", err)
+	}
+
+	if root == nil {
+		return errors.New("root directory not found")
+	}
+
+	fileMetadataEntity.DirectoryId = &root.Id
+	return nil
+}
+
 func (repo *DirectoryMetadataRepository) Hash(directoryMetadataEntity *entities.DirectoryMetadataEntity) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(directoryMetadataEntity.Name))

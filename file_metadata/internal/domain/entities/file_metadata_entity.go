@@ -18,4 +18,6 @@ type FileMetadataEntity struct {
 	DirectoryId   *uuid.UUID      `db:"directory_id"`
 	CreatedAt     time.Time       `db:"created_at"`
 	UpdateAt      time.Time       `db:"update_at"`
+	Checksum      string          `db:"checksum"`
+	EncryptionKey []byte          `db:"encryption_key"`
 }
