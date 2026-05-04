@@ -13,10 +13,19 @@ const (
 	File
 )
 
-type StorageItemDto struct {
-	Id        uuid.UUID
-	Name      string
-	Size      int
-	CreatedAt time.Time
-	Type      StorageItemType
+type DirectoryDto struct {
+	Id       uuid.UUID
+	Name     string
+	Size     int
+	ParentId uuid.UUID
+}
+
+type FileDto struct {
+	Id            uuid.UUID
+	Name          string
+	FileExtension string
+	Size          int
+	DirectoryId   uuid.UUID
+	CreatedAt     time.Time
+	UpdateAt      time.Time
 }

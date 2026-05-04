@@ -21,31 +21,22 @@ func NewGetDriveHandler(logger logger.Logger,
 	return &GetDriveHandler{logger, directoryMetadataRepository, fileMetadataRepository}
 }
 
-func (u *GetDriveHandler) Handle(cmd commands.GetDriveCommand) ([]dtos.StorageItemDto, error) {
-	var finalResult []dtos.StorageItemDto
+func (u *GetDriveHandler) Handle(cmd commands.GetDriveCommand) ([]dtos.DirectoryDto, []dtos.FileDto, error) {
 
 	// Step1: Get directories from database
-	var dirsResult []dtos.StorageItemDto
+	var dirsResult []dtos.DirectoryDto
 	dirs, err := u.directoryMetadataRepository.GetDirectories()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	copier.Copy(&dirsResult, &dirs)
-	for _, directoryMetadata := range dirsResult {
-		directoryMetadata.Type = dtos.Directory
-		finalResult = append(finalResult, directoryMetadata)
-	}
 
 	// Step2: Get files from database
-	var filesResult []dtos.StorageItemDto
+	var filesResult []dtos.FileDto
 	files, err := u.fileMetadataRepository.GetFiles()
 	if err != nil {
 	}
 	copier.Copy(&filesResult, &files)
-	for _, fileMetadata := range filesResult {
-		fileMetadata.Type = dtos.Directory
-		finalResult = append(finalResult, fileMetadata)
-	}
 
-	return finalResult, nil
+	return dirsResult, filesResult, nil
 }

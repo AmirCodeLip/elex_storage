@@ -11,6 +11,7 @@ func UseCaseModule() fx.Option {
 		fx.Provide(command_handlers.NewCreateDirectoryHandler),
 		fx.Provide(command_handlers.NewFileCreatedHandler),
 		fx.Provide(command_handlers.NewGetDirectoriesHandler),
+		fx.Provide(command_handlers.NewGetDriveHandler),
 	)
 	return module
 }

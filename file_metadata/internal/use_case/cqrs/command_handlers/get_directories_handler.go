@@ -18,8 +18,8 @@ func NewGetDirectoriesHandler(logger logger.Logger,
 	return &GetDirectoriesHandler{logger, directoryMetadataRepository}
 }
 
-func (u *GetDirectoriesHandler) Handle() ([]dtos.StorageItemDto, error) {
-	var result []dtos.StorageItemDto
+func (u *GetDirectoriesHandler) Handle() ([]dtos.DirectoryDto, error) {
+	var result []dtos.DirectoryDto
 	dirs, err := u.directoryMetadataRepository.GetDirectories()
 	if err != nil {
 		return nil, err

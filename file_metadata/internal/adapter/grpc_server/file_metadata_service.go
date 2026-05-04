@@ -23,8 +23,15 @@ type FileMetadataService struct {
 	logger                 logger.Logger
 }
 
-func NewFileMetadataService(getDirectoriesHandler *command_handlers.GetDirectoriesHandler, createDirectoryHandler *command_handlers.CreateDirectoryHandler, logger logger.Logger) grpc_service.FileMetadataServiceServer {
-	return &FileMetadataService{getDirectoriesHandler: getDirectoriesHandler, createDirectoryHandler: createDirectoryHandler, logger: logger}
+func NewFileMetadataService(
+	getDirectoriesHandler *command_handlers.GetDirectoriesHandler,
+	createDirectoryHandler *command_handlers.CreateDirectoryHandler,
+	getDriveHandler *command_handlers.GetDriveHandler,
+	logger logger.Logger) grpc_service.FileMetadataServiceServer {
+	return &FileMetadataService{getDirectoriesHandler: getDirectoriesHandler,
+		createDirectoryHandler: createDirectoryHandler,
+		getDriveHandler:        getDriveHandler,
+		logger:                 logger}
 }
 
 func (f *FileMetadataService) GetDirectories(context.Context, *grpc_service.GetDirectoriesRequest) (*grpc_service.StorageItemsResponse, error) {
@@ -67,17 +74,25 @@ func (f *FileMetadataService) GetStorageItems(ctx context.Context, req *grpc_ser
 	var getDriveCommand commands.GetDriveCommand
 	err := shared_kernel.MapToGrpc(&getDriveCommand, &req)
 
-	dirs, err := f.getDriveHandler.Handle(getDriveCommand)
+	dirs, files, err := f.getDriveHandler.Handle(getDriveCommand)
 	if err != nil {
 		f.logger.Error(err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	response := grpc_service.StorageItemsResponse{}
+
 	err = shared_kernel.MapToGrpc(&response.Directories, &dirs)
 	if err != nil {
 		f.logger.Error(err.Error())
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+
+	err = shared_kernel.MapToGrpc(&response.Files, &files)
+	if err != nil {
+		f.logger.Error(err.Error())
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	return &response, nil
 }
