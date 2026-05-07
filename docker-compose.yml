@@ -58,7 +58,7 @@ services:
       - DB_DATABASE=identity_service
   elex_file_metadata:
     container_name: elex_file_metadata
-    image: file_metadata:1.0.5
+    image: file_metadata:1.0.4
     ports:
       - 50052:50052
     networks:

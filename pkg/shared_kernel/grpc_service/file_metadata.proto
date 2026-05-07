@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
 option go_package = "elex_storage/pkg/shared_kernel/grpc_service"; 
 package file_metadata;
 
@@ -20,18 +19,18 @@ message GetStorageItemsRequest{
 message DirectoryInfo {
   string id = 1;
   string name = 2;
-  string size = 3;
+  int32 size = 3;
   string parentId = 4;
 }
 
 message FileInfo {
   string id = 1;
   string name = 2;
-  string size = 3;
+  int32 size = 3;
   string directory_id = 4;
   string file_extension = 5;
-  google.protobuf.Timestamp created_at = 6;
-  google.protobuf.Timestamp update_at = 7;
+  int64 created_at = 6;
+  int64 update_at = 7;
 }
 
 message StorageItemsResponse {
