@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
@@ -36,9 +37,10 @@ func (repo *FileMetadataRepository) CommitTransaction(tx *sqlx.Tx) error {
 	return tx.Commit()
 }
 
-func (repo *FileMetadataRepository) GetFiles() (*[]entities.FileMetadataEntity, error) {
+func (repo *FileMetadataRepository) GetFiles(parentId uuid.UUID) (*[]entities.FileMetadataEntity, error) {
 	var files []entities.FileMetadataEntity
-	err := repo.db.Select(&files, "SELECT * FROM files_metadata")
+	query := "SELECT * FROM files_metadata WHERE directory_id = $1"
+	err := repo.db.Select(&files, query, parentId)
 	return &files, err
 }
 

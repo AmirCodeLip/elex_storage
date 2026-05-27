@@ -36,10 +36,12 @@ func (repo *MockDirectoryMetadataRepository) Insert(directoryMetadataEntity *ent
 	return nil
 }
 
-func (repo *MockDirectoryMetadataRepository) GetDirectories() (*[]entities.DirectoryMetadataEntity, error) {
+func (repo *MockDirectoryMetadataRepository) GetDirectories(parentId uuid.UUID) (*[]entities.DirectoryMetadataEntity, error) {
 	dirs := make([]entities.DirectoryMetadataEntity, 0, len(repo.directories))
 	for _, dir := range repo.directories {
-		dirs = append(dirs, *dir)
+		if dir.ParentId != nil && *dir.ParentId == parentId {
+			dirs = append(dirs, *dir)
+		}
 	}
 	return &dirs, nil
 }

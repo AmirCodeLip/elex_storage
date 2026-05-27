@@ -13,15 +13,19 @@ func MapToGrpc(dest interface{}, src interface{}) error {
 	err := copier.CopyWithOption(dest, src, copier.Option{
 		Converters: []copier.TypeConverter{
 			{
-				SrcType: "",
-				DstType: uuid.UUID{},
+				SrcType: reflect.TypeOf(""),          // string type
+				DstType: reflect.TypeOf(uuid.UUID{}), // uuid.UUID type
 				Fn: func(src interface{}) (interface{}, error) {
-					return uuid.Parse(src.(string))
+					s, ok := src.(string)
+					if !ok {
+						return nil, fmt.Errorf("expected string, got %T", src)
+					}
+					return uuid.Parse(s)
 				},
 			},
 			{
-				SrcType: "",
-				DstType: (*uuid.UUID)(nil),
+				SrcType: reflect.TypeOf(""),                       // string type
+				DstType: reflect.TypeOf((*uuid.UUID)(nil)).Elem(), // *uuid.UUID type
 				Fn: func(src interface{}) (interface{}, error) {
 					if src == nil {
 						return nil, nil

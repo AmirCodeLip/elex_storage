@@ -20,7 +20,12 @@ func NewGetDirectoriesHandler(logger logger.Logger,
 
 func (u *GetDirectoriesHandler) Handle() ([]dtos.DirectoryDto, error) {
 	var result []dtos.DirectoryDto
-	dirs, err := u.directoryMetadataRepository.GetDirectories()
+	// Step: Get root dir and set parentId .
+	root, err := u.directoryMetadataRepository.GetRoot()
+	if err != nil {
+		return nil, err
+	}
+	dirs, err := u.directoryMetadataRepository.GetDirectories(root.Id)
 	if err != nil {
 		return nil, err
 	}

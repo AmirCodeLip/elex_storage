@@ -7,6 +7,9 @@ import (
 	"elex_storage/pkg/logger"
 	"elex_storage/pkg/shared_kernel"
 	"elex_storage/pkg/shared_kernel/models"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/jmoiron/sqlx"
@@ -17,10 +20,23 @@ import (
 type AppTest struct {
 }
 
-func setConfigs() *models.ConfigEnv {
-	cfg := shared_kernel.TestConfigEnv()
+func setConfigs() (*models.ConfigEnv, error) {
+	pwd, _ := os.Getwd()
+	var exeDir = filepath.Dir(pwd)
+	paths := strings.Split(exeDir, "\\")
+	for {
+		/// remove until get root of project
+		last := paths[len(paths)-1]
+		if last != "elex_storage" {
+			paths = paths[:len(paths)-1]
+		} else {
+			break
+		}
+	}
+	paths = append(paths, ".env")
+	envAddr := strings.Join(paths, "\\")
 	// os.Setenv("LOGGER_PATH", "D:\\Projects\\elex_storage\\bin\\test.log")
-	return cfg
+	return shared_kernel.TestConfigEnv(&envAddr)
 }
 
 func InjectBase(t *testing.T) (*fxtest.App, *sqlx.DB, logger.Logger) {
@@ -31,8 +47,8 @@ func InjectBase(t *testing.T) (*fxtest.App, *sqlx.DB, logger.Logger) {
 		fx.Provide(func() *testing.T {
 			return t
 		}),
-		fx.Provide(setConfigs),
 		fx.Provide(logger.NewLoggerMock),
+		fx.Provide(setConfigs),
 		fx.Provide(database.NewDatabase),
 		fx.Populate(&db),
 		fx.Populate(&lg),

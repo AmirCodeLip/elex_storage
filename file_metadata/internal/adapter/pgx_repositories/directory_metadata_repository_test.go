@@ -14,6 +14,13 @@ import (
 func TestDirectoryMetadataRepository(t *testing.T) {
 	_, db, logger := test.InjectBase(t)
 	directoryMetadataRepository := CreateDirectoryMetadataRepository(logger, db)
+
+	root, err := directoryMetadataRepository.GetRoot()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
 	// Insert directories
 	insertErr1 := directoryMetadataRepository.Insert(&entities.DirectoryMetadataEntity{
 		Id: uuid.New(), Name: "test_dir1", Size: 10,
@@ -38,7 +45,7 @@ func TestDirectoryMetadataRepository(t *testing.T) {
 			logger.Error(insertErr2.Error())
 		}
 	}
-	dirs, err := directoryMetadataRepository.GetDirectories()
+	dirs, err := directoryMetadataRepository.GetDirectories(root.Id)
 	if err != nil {
 		logger.Error("failed to fetch directories: %v", err)
 	}
@@ -50,7 +57,14 @@ func TestDirectoryMetadataRepository(t *testing.T) {
 func TestGetDirectoryMetadataRepository(t *testing.T) {
 	_, db, logger := test.InjectBase(t)
 	directoryMetadataRepository := CreateDirectoryMetadataRepository(logger, db)
-	dirs, getErr1 := directoryMetadataRepository.GetDirectories()
+
+	root, err := directoryMetadataRepository.GetRoot()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	dirs, getErr1 := directoryMetadataRepository.GetDirectories(root.Id)
 	if getErr1 != nil {
 		logger.Error(getErr1.Error())
 		return

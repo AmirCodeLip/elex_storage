@@ -11,6 +11,7 @@ import (
 	domain_errors "elex_storage/file_metadata/internal/domain/errors"
 	"elex_storage/file_metadata/internal/domain/repositories"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -52,10 +53,12 @@ func (repo *MockFileMetadataRepository) Insert(fileMetadataEntity entities.FileM
 	return nil
 }
 
-func (repo *MockFileMetadataRepository) GetFiles() (*[]entities.FileMetadataEntity, error) {
+func (repo *MockFileMetadataRepository) GetFiles(parentId uuid.UUID) (*[]entities.FileMetadataEntity, error) {
 	files := make([]entities.FileMetadataEntity, 0, len(repo.files))
-	for _, dir := range repo.files {
-		files = append(files, *dir)
+	for _, file := range repo.files {
+		if file.DirectoryId != nil && *file.DirectoryId == parentId {
+			files = append(files, *file)
+		}
 	}
 	return &files, nil
 }

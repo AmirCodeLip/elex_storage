@@ -56,9 +56,10 @@ func (repo *DirectoryMetadataRepository) Insert(directoryMetadataEntity *entitie
 	return nil
 }
 
-func (repo *DirectoryMetadataRepository) GetDirectories() (*[]entities.DirectoryMetadataEntity, error) {
+func (repo *DirectoryMetadataRepository) GetDirectories(parentId uuid.UUID) (*[]entities.DirectoryMetadataEntity, error) {
 	var dirs []entities.DirectoryMetadataEntity
-	err := repo.db.Select(&dirs, "SELECT * FROM directories_metadata")
+	query := "SELECT * FROM directories_metadata WHERE parent_id = $1"
+	err := repo.db.Select(&dirs, query, parentId)
 	return &dirs, err
 }
 

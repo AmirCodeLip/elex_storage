@@ -80,7 +80,7 @@ type GetDirectoriesRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ParrentId string `protobuf:"bytes,1,opt,name=parrentId,proto3" json:"parrentId,omitempty"`
+	ParentId string `protobuf:"bytes,1,opt,name=parentId,proto3" json:"parentId,omitempty"`
 }
 
 func (x *GetDirectoriesRequest) Reset() {
@@ -115,9 +115,9 @@ func (*GetDirectoriesRequest) Descriptor() ([]byte, []int) {
 	return file_file_metadata_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetDirectoriesRequest) GetParrentId() string {
+func (x *GetDirectoriesRequest) GetParentId() string {
 	if x != nil {
-		return x.ParrentId
+		return x.ParentId
 	}
 	return ""
 }
@@ -127,7 +127,7 @@ type GetStorageItemsRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ParrentId string `protobuf:"bytes,1,opt,name=parrentId,proto3" json:"parrentId,omitempty"`
+	ParentId string `protobuf:"bytes,1,opt,name=parentId,proto3" json:"parentId,omitempty"`
 }
 
 func (x *GetStorageItemsRequest) Reset() {
@@ -162,9 +162,9 @@ func (*GetStorageItemsRequest) Descriptor() ([]byte, []int) {
 	return file_file_metadata_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetStorageItemsRequest) GetParrentId() string {
+func (x *GetStorageItemsRequest) GetParentId() string {
 	if x != nil {
-		return x.ParrentId
+		return x.ParentId
 	}
 	return ""
 }

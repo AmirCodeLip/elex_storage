@@ -9,11 +9,11 @@ message CreateDirectoryRequest {
 }
 
 message GetDirectoriesRequest {
-    string parrentId = 1;
+    string parentId = 1;
 }
 
 message GetStorageItemsRequest{
-    string parrentId = 1;
+    string parentId = 1;
 }
 
 message DirectoryInfo {

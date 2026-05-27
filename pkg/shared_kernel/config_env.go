@@ -1,6 +1,7 @@
 package shared_kernel
 
 import (
+	"elex_storage/pkg/shared_kernel/guard"
 	"elex_storage/pkg/shared_kernel/models"
 	"errors"
 	"fmt"
@@ -130,7 +131,15 @@ func NewConfigEnv() (*models.ConfigEnv, error) {
 	return &config, nil
 }
 
-func TestConfigEnv() *models.ConfigEnv {
+func TestConfigEnv(envFilePath *string) (*models.ConfigEnv, error) {
+	if guard.AgainstPNullStr(envFilePath) {
+		if err := godotenv.Load(*envFilePath); err != nil {
+			return nil, errors.New(fmt.Sprintf("Warning: Could not load %s", *envFilePath))
+		}
+	} else {
+		return nil, errors.New("Provide valid .env path")
+	}
+
 	config := models.ConfigEnv{}
 	os.Setenv("DB_HOST", "localhost")
 	os.Setenv("DB_PORT", "10252")
@@ -150,7 +159,7 @@ func TestConfigEnv() *models.ConfigEnv {
 	pgConnectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
 	config.PGConnectionString = pgConnectionString
 
-	return &config
+	return &config, nil
 }
 
 func parseAddress(addr string) (models.Url, error) {

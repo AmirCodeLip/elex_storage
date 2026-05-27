@@ -24,7 +24,7 @@ func TestFileCreatedHandler(t *testing.T) {
 	if err := handler.Handle(cmd); err != nil {
 		t.Fatal(err.Error())
 	}
-	files, err := fileMetadataRepository.GetFiles()
+	files, err := fileMetadataRepository.GetFiles(uuid.Nil)
 	if err != nil {
 		t.Fatal(err.Error())
 	}

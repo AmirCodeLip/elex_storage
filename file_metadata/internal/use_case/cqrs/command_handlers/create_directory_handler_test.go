@@ -4,6 +4,8 @@ import (
 	"elex_storage/file_metadata/internal/test"
 	"elex_storage/file_metadata/internal/use_case/cqrs/commands"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestCreateDirectoryHandler(t *testing.T) {
@@ -13,7 +15,7 @@ func TestCreateDirectoryHandler(t *testing.T) {
 	if err, _ := handler.Handle(cmd); err != nil {
 		t.Fatal(err.Error())
 	}
-	dirs, err := directoryMetadataRepository.GetDirectories()
+	dirs, err := directoryMetadataRepository.GetDirectories(uuid.Nil)
 	if err != nil {
 		t.Fatal(err.Error())
 	}

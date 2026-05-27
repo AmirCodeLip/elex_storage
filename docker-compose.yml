@@ -78,6 +78,17 @@ services:
       - ./docker_app.env
     environment:
       - DB_DATABASE=file_storage
+  elex_api_gateway:
+    container_name: elex_api_gateway
+    image: api_gateway:1.0.3
+    ports:
+      - "8080:8080"
+    networks:
+      - elex_storage_network
+    env_file:
+      - ./docker/envs/api_gateway.env
+    environment:
+      - DB_DATABASE=file_storage
 volumes:
   postgres_data:
 

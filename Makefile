@@ -1,6 +1,6 @@
 
 build-api-gateway:
-	docker build -t api_gateway:10.0.2 -f api_gateway/Dockerfile .
+	docker build -t api_gateway:1.0.3 -f api_gateway/Dockerfile .
 
 build-identity-service:
 	docker build -t identity_service:1.0.4 -f identity_service/Dockerfile .
