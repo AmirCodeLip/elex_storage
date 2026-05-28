@@ -1,6 +1,6 @@
 module elex_storage/file_metadata
 
-go 1.24.0
+go 1.25.3
 
 require (
 	elex_storage/pkg v0.0.0
@@ -9,15 +9,14 @@ require (
 	github.com/jinzhu/copier v0.4.0
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
-	github.com/julienschmidt/httprouter v1.3.0
 	go.uber.org/fx v1.24.0
 	google.golang.org/grpc v1.79.3
-	google.golang.org/protobuf v1.36.10
 )
 
 replace elex_storage/pkg => ../pkg
 
 require (
+	github.com/bearsoft-fi/slogloki v0.0.2 // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
@@ -32,4 +31,5 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
+	google.golang.org/protobuf v1.36.10 // indirect
 )

@@ -20,7 +20,8 @@ func main() {
 	fx.New(
 		fx.Provide(
 			shared_kernel.NewConfigEnv,
-			logger.NewLogger,
+			shared_kernel.NewConfigEnv2,
+			logger.NewLokiLogger,
 			database.NewDatabase,
 			core_utils.NewPathUtil,
 			configs.NewServer,

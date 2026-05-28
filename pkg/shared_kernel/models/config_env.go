@@ -24,4 +24,15 @@ type ConfigEnv struct {
 	DriveDisk          string
 	DriveName          string
 	FileStorageHttpUrl Url
+	// Monitoring and logger configs.
+	LokiApiAddress string
+}
+
+type ConfigEnv2 struct {
+	ServiceName   string   `mapstructure:"service_name"`
+	MigrationsDir string   `mapstructure:"migrations_dir"`
+	Loki          Loki     `mapstructure:"loki"`
+	Server        Server   `mapstructure:"server"`
+	Database      Database `mapstructure:"database"`
+	RabbitMQ      RabbitMQ `mapstructure:"rabbitmq"`
 }

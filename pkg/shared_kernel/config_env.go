@@ -13,11 +13,12 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
 func setIdentityService(config *models.ConfigEnv) error {
-	grpcUrl, err := parseAddress(os.Getenv("IDENTITY_SERVICE_Grpc_Url"))
-	config.IdentityServiceGrpcUrl = grpcUrl
+	grpcUrl, err := ParseUrl(os.Getenv("IDENTITY_SERVICE_Grpc_Url"))
+	config.IdentityServiceGrpcUrl = *grpcUrl
 	if err != nil {
 		return errors.Join(errors.New(
 			fmt.Sprintf("Can't parse IDENTITY_SERVICE_Grpc_Addr is not valid host %s", grpcUrl.FullAddress)), err)
@@ -39,8 +40,8 @@ func setIdentityService(config *models.ConfigEnv) error {
 }
 
 func setApiGatewayService(config *models.ConfigEnv) error {
-	apiGatewayHttpUrl, err := parseAddress(os.Getenv("API_GATEWAY_HTTP_URL"))
-	config.ApiGatewayHttpUrl = apiGatewayHttpUrl
+	apiGatewayHttpUrl, err := ParseUrl(os.Getenv("API_GATEWAY_HTTP_URL"))
+	config.ApiGatewayHttpUrl = *apiGatewayHttpUrl
 	if err != nil {
 		return errors.Join(errors.New(
 			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", apiGatewayHttpUrl.FullAddress)), err)
@@ -49,8 +50,8 @@ func setApiGatewayService(config *models.ConfigEnv) error {
 }
 
 func setFileStorageService(config *models.ConfigEnv) error {
-	fileStorageHttpUrl, err := parseAddress(os.Getenv("FILE_STORAGE_HTTP_URL"))
-	config.FileStorageHttpUrl = fileStorageHttpUrl
+	fileStorageHttpUrl, err := ParseUrl(os.Getenv("FILE_STORAGE_HTTP_URL"))
+	config.FileStorageHttpUrl = *fileStorageHttpUrl
 	if err != nil {
 		return errors.Join(errors.New(
 			fmt.Sprintf("Can't parse FileMetadataServiceAddr is not valid host %s", fileStorageHttpUrl.FullAddress)), err)
@@ -67,8 +68,8 @@ func setFileMetadataService(config *models.ConfigEnv) error {
 		config.DriveDisk = filepath.Join(config.DriveDisk, p)
 	}
 	config.DriveName = os.Getenv("DRIVE_NAME")
-	fileMetadataGrpcUrl, err := parseAddress(os.Getenv("FILE_META_DATA_GRPC_URL"))
-	config.FileMetadataGrpcUrl = fileMetadataGrpcUrl
+	fileMetadataGrpcUrl, err := ParseUrl(os.Getenv("FILE_META_DATA_GRPC_URL"))
+	config.FileMetadataGrpcUrl = *fileMetadataGrpcUrl
 	if err != nil {
 		return errors.Join(errors.New(
 			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", fileMetadataGrpcUrl.FullAddress)), err)
@@ -131,6 +132,113 @@ func NewConfigEnv() (*models.ConfigEnv, error) {
 	return &config, nil
 }
 
+func NewConfigEnv2() (*models.ConfigEnv2, error) {
+	env, err := GetFilePath(".env")
+	if err == nil {
+		errEnv := godotenv.Load(env)
+		if errEnv != nil {
+			err := fmt.Errorf("No .env file found in %s \n", env)
+			log.Fatal(err)
+		}
+	}
+
+	/// Load yml file
+	ymlConfig, err := GetFilePath("configs.yml")
+	if err != nil {
+		return nil, err
+	}
+	viper.SetConfigFile(ymlConfig)
+	viper.SetConfigType("yaml")
+
+	// Enable environment variable expansion
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	// Read config file
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("failed to read config file: %w", err)
+	}
+
+	// Expand environment variables in the config
+	for _, key := range viper.AllKeys() {
+		val := viper.GetString(key)
+		// Set from .env file if started with $
+		if strings.Contains(val, "${") {
+			expandedVal := os.ExpandEnv(val)
+			viper.Set(key, expandedVal)
+		}
+	}
+
+	var config2 models.ConfigEnv2
+	if err := viper.Unmarshal(&config2); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+	}
+
+	fmt.Println(config2.Database.Name)
+	return &config2, nil
+}
+
+func GetFilePath(fileName string) (string, error) {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
+	// Start from the root
+	root := filepath.VolumeName(pwd) + string(filepath.Separator)
+
+	// Get the relative path from root to current directory
+	relPath, err := filepath.Rel(root, pwd)
+	if err != nil {
+		return "", fmt.Errorf("failed to get relative path: %w", err)
+	}
+
+	// Split the relative path
+	parts := strings.Split(relPath, string(filepath.Separator))
+
+	// Find where "cmd" appears and truncate
+	for i, part := range parts {
+		if part == "cmd" {
+			parts = parts[:i]
+			break
+		}
+	}
+
+	// Build the final path
+	filePath := filepath.Join(root, filepath.Join(parts...), fileName)
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); err != nil {
+		if os.IsNotExist(err) {
+			return "", fmt.Errorf("file does not exist: %s", filePath)
+		}
+		return "", fmt.Errorf("failed to check file existence: %w", err)
+	}
+
+	return filePath, nil
+}
+
+func GetTestEnvPath() (*string, error) {
+	pwd, _ := os.Getwd()
+	var exeDir = filepath.Dir(pwd)
+	paths := strings.Split(exeDir, "\\")
+	for i := 0; ; i++ {
+		/// remove until get root of project
+		last := paths[len(paths)-1]
+		if last != "elex_storage" {
+			paths = paths[:len(paths)-1]
+		} else {
+			break
+		}
+		if i == 7 {
+			return nil, errors.New("Can't find env path")
+		}
+	}
+	paths = append(paths, ".env")
+	envAddr := strings.Join(paths, "\\")
+	return &envAddr, nil
+}
+
 func TestConfigEnv(envFilePath *string) (*models.ConfigEnv, error) {
 	if guard.AgainstPNullStr(envFilePath) {
 		if err := godotenv.Load(*envFilePath); err != nil {
@@ -162,7 +270,10 @@ func TestConfigEnv(envFilePath *string) (*models.ConfigEnv, error) {
 	return &config, nil
 }
 
-func parseAddress(addr string) (models.Url, error) {
+func ParseUrl(addr string) (*models.Url, error) {
+	if !guard.AgainstEmptyStr(addr) {
+		return nil, errors.New("Addr can't be nil")
+	}
 	result := models.Url{
 		Protocol: "http", // default protocol
 		Port:     80,     // default port
@@ -184,7 +295,7 @@ func parseAddress(addr string) (models.Url, error) {
 		result.Host = parts[0]
 		port, err := strconv.Atoi(parts[1])
 		if err != nil {
-			return models.Url{}, err
+			return &models.Url{}, err
 		}
 		result.Port = port
 	} else {
@@ -210,5 +321,5 @@ func parseAddress(addr string) (models.Url, error) {
 		result.Address = fmt.Sprintf("%s:%d", result.Host, result.Port)
 	}
 
-	return result, nil
+	return &result, nil
 }

@@ -15,3 +15,7 @@ func AgainstPNullStrs(params ...*string) bool {
 func AgainstPNullStr(param *string) bool {
 	return !(param == nil || *param == "")
 }
+
+func AgainstEmptyStr(param string) bool {
+	return !(param == "")
+}

@@ -20,10 +20,12 @@ type RabbitmqMessaging struct {
 }
 
 // broker client setup
-func NewRabbitmqMessaging(logger logger.Logger, cfg *models.ConfigEnv) (EventMessaging, error) {
-	conn, err := amqp091.Dial(cfg.RabbitmqConnectionString)
+func NewRabbitmqMessaging(logger logger.Logger, cfg *models.ConfigEnv2) (EventMessaging, error) {
+	rabbitmqConnectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", cfg.RabbitMQ.User,
+		cfg.RabbitMQ.Password, cfg.RabbitMQ.Host, cfg.RabbitMQ.Port)
+	conn, err := amqp091.Dial(rabbitmqConnectionString)
 	if err != nil {
-		err2 := errors.New(fmt.Sprintf("connection rabitmq %s", cfg.RabbitmqConnectionString))
+		err2 := errors.New(fmt.Sprintf("connection rabitmq %s", rabbitmqConnectionString))
 		logger.Info(err2.Error())
 		logger.Error(err.Error())
 		return nil, errors.Join(err2, err)

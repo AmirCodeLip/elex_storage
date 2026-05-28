@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: pass1234
       POSTGRES_DB: elex_storage_db
     ports:
-      - "10252:5432"  # Expose PostgreSQL port
+      - "5432:5432"  # Expose PostgreSQL port
     volumes:
       - postgres_data:/var/lib/postgresql
     command: postgres -c listen_addresses='*'  # Allow all connections
@@ -27,7 +27,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@local.com
       PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
-      - "5051:80"
+      - "5050:80"
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,8 +38,8 @@ services:
     image: rabbitmq:management
     restart: unless-stopped
     ports:
-      - 10253:5672
-      - 10254:15672
+      - 5672:5672
+      - 15672:15672
     environment:
       RABBITMQ_DEFAULT_USER: elex_storage
       RABBITMQ_DEFAULT_PASS: pass1234

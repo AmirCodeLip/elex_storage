@@ -2,10 +2,12 @@ package configs
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
 	"elex_storage/pkg/logger"
+	"elex_storage/pkg/shared_kernel"
 	"elex_storage/pkg/shared_kernel/models"
 
 	"go.uber.org/fx"
@@ -18,17 +20,21 @@ type Server struct {
 	logger  logger.Logger
 }
 
-func NewServer(handler *http.Handler, cfg *models.ConfigEnv) *Server {
+func NewServer(handler *http.Handler, cfg *models.ConfigEnv2) (*Server, error) {
+	url, err := shared_kernel.ParseUrl(cfg.Server.HTTPListenUrl)
+	if err != nil {
+		return nil, errors.New("HTTPListenUrl is not set or is invalid; set it in config.yml")
+	}
 	return &Server{
-		port: cfg.FileStorageHttpUrl.Port,
+		port: url.Port,
 		server: &http.Server{
-			Addr:         cfg.FileStorageHttpUrl.Address,
+			Addr:         url.Address,
 			Handler:      *handler,
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 30 * time.Second,
 		},
-	}
+	}, nil
 }
 
 func (s *Server) Start() error {

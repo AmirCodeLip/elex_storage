@@ -35,7 +35,6 @@ func setConfigs() (*models.ConfigEnv, error) {
 	}
 	paths = append(paths, ".env")
 	envAddr := strings.Join(paths, "\\")
-	// os.Setenv("LOGGER_PATH", "D:\\Projects\\elex_storage\\bin\\test.log")
 	return shared_kernel.TestConfigEnv(&envAddr)
 }
 

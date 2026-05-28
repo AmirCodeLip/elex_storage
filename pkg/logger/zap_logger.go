@@ -2,7 +2,6 @@ package logger
 
 import (
 	"os"
-	"runtime"
 	"strings"
 
 	"go.uber.org/zap"
@@ -11,30 +10,6 @@ import (
 
 type ZapLogger struct {
 	logger *zap.Logger
-}
-
-func captureTrace() []any {
-	fields := []any{}
-
-	// Get caller info
-	pc, file, line, ok := runtime.Caller(2)
-	if !ok {
-		return fields
-	}
-
-	fn := runtime.FuncForPC(pc)
-	funcName := ""
-	if fn != nil {
-		funcName = fn.Name()
-	}
-
-	fields = append(fields,
-		"func", funcName,
-		"file", file,
-		"line", line,
-	)
-
-	return fields
 }
 
 func (z *ZapLogger) Info(msg string, fields ...any) {
