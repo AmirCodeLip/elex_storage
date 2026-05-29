@@ -19,7 +19,7 @@ import (
 func main() {
 	fx.New(
 		fx.Provide(
-			shared_kernel.NewConfigEnv2,
+			shared_kernel.NewConfigEnv,
 			logger.NewLokiLogger,
 			database.NewDatabase,
 			core_utils.NewPathUtil,

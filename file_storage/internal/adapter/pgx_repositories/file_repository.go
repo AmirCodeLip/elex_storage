@@ -16,7 +16,7 @@ type FileRepository struct {
 	driveDisk string
 }
 
-func CreateFileRepository(logger logger.Logger, db *sqlx.DB, config *models.ConfigEnv2) repositories.FileRepository {
+func CreateFileRepository(logger logger.Logger, db *sqlx.DB, config *models.ConfigEnv) repositories.FileRepository {
 	return &FileRepository{logger: logger, db: db, driveDisk: config.DriveDisk}
 }
 

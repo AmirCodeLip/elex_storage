@@ -18,13 +18,13 @@ import (
 
 type SaveFileHandler struct {
 	logger           logger.Logger
-	config           *models.ConfigEnv2
+	config           *models.ConfigEnv
 	fileRepository   repositories.FileRepository
 	pathUtil         *core_utils.PathUtil
 	storagePublisher publishers.StoragePublisher
 }
 
-func NewSaveFileHandler(logger logger.Logger, config *models.ConfigEnv2,
+func NewSaveFileHandler(logger logger.Logger, config *models.ConfigEnv,
 	fileRepository repositories.FileRepository, pathUtil *core_utils.PathUtil,
 	storagePublisher publishers.StoragePublisher) *SaveFileHandler {
 	return &SaveFileHandler{logger, config, fileRepository, pathUtil, storagePublisher}

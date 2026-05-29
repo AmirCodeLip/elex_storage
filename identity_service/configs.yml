@@ -1,5 +1,10 @@
-service_name: iran_north_cloud
-drive_disk: bin/elex_storage_D
+service_name: identity_service
+
+# This keys are used for authenticate the user
+jwt_private_key_path: ./jwt_identity_private.key
+jwt_public_key_path: ./jwt_identity_public.key
+access_token_duration: 48h
+refresh_token_duration: 720h
 
 loki:
   # Main endpoint for pushing logs
@@ -15,7 +20,7 @@ loki:
     tenant_id: ${LOKI_TENANT_ID:-file_storage}
 
 server:
-  http_listen_url: localhost:50053
+  grpc_listen_url: localhost:50051
 
 # Database configuration
 database:

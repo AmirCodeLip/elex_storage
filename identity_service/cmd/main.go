@@ -19,7 +19,7 @@ func main() {
 	fx.New(
 		fx.Provide(
 			shared_kernel.NewConfigEnv,
-			logger.NewLogger,
+			logger.NewLokiLogger,
 			database.NewDatabase,
 			utils.NewHttpErrorUtils,
 			message_broker.NewRabbitmqMessaging,

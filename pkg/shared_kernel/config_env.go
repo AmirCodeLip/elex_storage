@@ -10,130 +10,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
-func setIdentityService(config *models.ConfigEnv) error {
-	grpcUrl, err := ParseUrl(os.Getenv("IDENTITY_SERVICE_Grpc_Url"))
-	config.IdentityServiceGrpcUrl = *grpcUrl
-	if err != nil {
-		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse IDENTITY_SERVICE_Grpc_Addr is not valid host %s", grpcUrl.FullAddress)), err)
-	}
-	// Set AccessTokenDuration
-	val1 := os.Getenv("ACCESS_TOKEN_DURATION")
-	accessTokenDuration, err := time.ParseDuration(val1)
-	if err != nil {
-		return err
-	}
-	val2 := os.Getenv("REFRESH_TOKEN_DURATION")
-	refreshTokenDuration, err := time.ParseDuration(val2)
-	if err != nil {
-		return err
-	}
-	config.RefreshTokenDuration = refreshTokenDuration
-	config.AccessTokenDuration = accessTokenDuration
-	return nil
-}
-
-func setApiGatewayService(config *models.ConfigEnv) error {
-	apiGatewayHttpUrl, err := ParseUrl(os.Getenv("API_GATEWAY_HTTP_URL"))
-	config.ApiGatewayHttpUrl = *apiGatewayHttpUrl
-	if err != nil {
-		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", apiGatewayHttpUrl.FullAddress)), err)
-	}
-	return nil
-}
-
-func setFileStorageService(config *models.ConfigEnv) error {
-	fileStorageHttpUrl, err := ParseUrl(os.Getenv("FILE_STORAGE_HTTP_URL"))
-	config.FileStorageHttpUrl = *fileStorageHttpUrl
-	if err != nil {
-		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse FileMetadataServiceAddr is not valid host %s", fileStorageHttpUrl.FullAddress)), err)
-	}
-	return nil
-}
-
-func setFileMetadataService(config *models.ConfigEnv) error {
-
-	// Clean DriveDisk to support linux
-	parts := strings.Split(os.Getenv("DRIVE_DISK"), "\\")
-	config.DriveDisk = ""
-	for _, p := range parts {
-		config.DriveDisk = filepath.Join(config.DriveDisk, p)
-	}
-	config.DriveName = os.Getenv("DRIVE_NAME")
-	fileMetadataGrpcUrl, err := ParseUrl(os.Getenv("FILE_META_DATA_GRPC_URL"))
-	config.FileMetadataGrpcUrl = *fileMetadataGrpcUrl
-	if err != nil {
-		return errors.Join(errors.New(
-			fmt.Sprintf("Can't parse ApiGatewayServiceAddr is not valid host %s", fileMetadataGrpcUrl.FullAddress)), err)
-	}
-	return nil
-}
-
-// Load configurations from .env file.
 func NewConfigEnv() (*models.ConfigEnv, error) {
-	// Load config file
-	config := models.ConfigEnv{}
-	pwd, _ := os.Getwd()
-	var exeDir = filepath.Dir(pwd)
-	configDir := filepath.Clean(filepath.Join(exeDir, "..", ".env"))
-	_, err := os.Stat(configDir)
-	if err == nil {
-		errEnv := godotenv.Load(configDir)
-		if errEnv != nil {
-			err := fmt.Errorf("No .env file found in %s \n", configDir)
-			log.Fatal(err)
-		}
-	}
-	// Set services configs
-	err = setIdentityService(&config)
-	if err != nil {
-		return nil, err
-	}
-	err = setApiGatewayService(&config)
-	if err != nil {
-		return nil, err
-	}
-	err = setFileMetadataService(&config)
-	if err != nil {
-		return nil, err
-	}
-	err = setFileStorageService(&config)
-	if err != nil {
-		return nil, err
-	}
-	config.MigrationsDir = os.Getenv("MIGRATIONS_DIR")
-	config.LoggerPath = os.Getenv("LOGGER_PATH")
-
-	// Postgres configs
-	database := os.Getenv("DB_DATABASE")
-	password := os.Getenv("DB_PASSWORD")
-	username := os.Getenv("DB_USERNAME")
-	port := os.Getenv("DB_PORT")
-	host := os.Getenv("DB_HOST")
-	schema := os.Getenv("DB_SCHEMA")
-	pgConnectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
-	config.PGConnectionString = pgConnectionString
-
-	rabbitmqUserName := os.Getenv("RABBITMQ_USER")
-	rabbitmqPassword := os.Getenv("RABBITMQ_PASSWORD")
-	rabbitmqHost := os.Getenv("RABBITMQ_HOST")
-	rabbitmqPort := os.Getenv("RABBITMQ_PORT")
-	rabbitmqConnectionString := fmt.Sprintf("amqp://%s:%s@%s:%s/", rabbitmqUserName, rabbitmqPassword, rabbitmqHost, rabbitmqPort)
-	config.RabbitmqConnectionString = rabbitmqConnectionString
-
-	return &config, nil
-}
-
-func NewConfigEnv2() (*models.ConfigEnv2, error) {
-	env, err := GetPath(".env")
+	env, err := GetRelativePath(".env")
 	if err == nil {
 		errEnv := godotenv.Load(env)
 		if errEnv != nil {
@@ -143,7 +26,7 @@ func NewConfigEnv2() (*models.ConfigEnv2, error) {
 	}
 
 	/// Load yml file
-	ymlConfig, err := GetPath("configs.yml")
+	ymlConfig, err := GetRelativePath("configs.yml")
 	if err != nil {
 		return nil, err
 	}
@@ -169,19 +52,20 @@ func NewConfigEnv2() (*models.ConfigEnv2, error) {
 		}
 	}
 
-	var config2 models.ConfigEnv2
-	if err := viper.Unmarshal(&config2); err != nil {
+	var config models.ConfigEnv
+	if err := viper.Unmarshal(&config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	if migrationDir, err := GetPath("migrations"); err == nil {
-		config2.MigrationsDir = migrationDir
+	if migrationDir, err := GetRelativePath("migrations"); err == nil {
+		config.MigrationsDir = migrationDir
 	}
 
-	return &config2, nil
+	return &config, nil
 }
 
-func GetPath(fileName string) (string, error) {
+// This function will return file path witout cmd file
+func GetRelativePath(fileName string) (string, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current working directory: %w", err)
@@ -250,27 +134,25 @@ func TestConfigEnv(envFilePath *string) (*models.ConfigEnv, error) {
 	} else {
 		return nil, errors.New("Provide valid .env path")
 	}
+	return nil, errors.New("Not implemented new config")
+	// config := models.ConfigEnv{}
+	// os.Setenv("DB_HOST", "localhost")
+	// os.Setenv("DB_PORT", "10252")
+	// os.Setenv("DB_DATABASE", "file_metadata")
+	// os.Setenv("DB_USERNAME", "elex_storage")
+	// os.Setenv("DB_PASSWORD", "pass1234")
+	// os.Setenv("DB_SCHEMA", "public")
+	// os.Setenv("MIGRATIONS_DIR", "..\\migrations")
 
-	config := models.ConfigEnv{}
-	os.Setenv("DB_HOST", "localhost")
-	os.Setenv("DB_PORT", "10252")
-	os.Setenv("DB_DATABASE", "file_metadata")
-	os.Setenv("DB_USERNAME", "elex_storage")
-	os.Setenv("DB_PASSWORD", "pass1234")
-	os.Setenv("DB_SCHEMA", "public")
-	os.Setenv("MIGRATIONS_DIR", "..\\migrations")
-
-	config.MigrationsDir = os.Getenv("MIGRATIONS_DIR")
-	database := os.Getenv("DB_DATABASE")
-	password := os.Getenv("DB_PASSWORD")
-	username := os.Getenv("DB_USERNAME")
-	port := os.Getenv("DB_PORT")
-	host := os.Getenv("DB_HOST")
-	schema := os.Getenv("DB_SCHEMA")
-	pgConnectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
-	config.PGConnectionString = pgConnectionString
-
-	return &config, nil
+	// config.MigrationsDir = os.Getenv("MIGRATIONS_DIR")
+	// database := os.Getenv("DB_DATABASE")
+	// password := os.Getenv("DB_PASSWORD")
+	// username := os.Getenv("DB_USERNAME")
+	// port := os.Getenv("DB_PORT")
+	// host := os.Getenv("DB_HOST")
+	// schema := os.Getenv("DB_SCHEMA")
+	// pgConnectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
+	// config.PGConnectionString = pgConnectionString
 }
 
 func ParseUrl(addr string) (*models.Url, error) {

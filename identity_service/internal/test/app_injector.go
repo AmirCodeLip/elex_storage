@@ -15,9 +15,13 @@ import (
 type AppTest struct {
 }
 
-func setConfigs() *models.ConfigEnv {
-	cfg := shared_kernel.TestConfigEnv()
-	return cfg
+func setConfigs() (*models.ConfigEnv, error) {
+	test_env, err := shared_kernel.GetTestEnvPath()
+	if err != nil {
+		return nil, err
+	}
+	cfg, err := shared_kernel.TestConfigEnv(test_env)
+	return cfg, err
 }
 
 func InjectBase(t *testing.T) (*fxtest.App, *sqlx.DB, logger.Logger, *models.ConfigEnv) {

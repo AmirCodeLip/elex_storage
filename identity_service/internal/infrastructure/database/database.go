@@ -4,7 +4,6 @@ import (
 	"elex_storage/pkg/logger"
 	"elex_storage/pkg/shared_kernel/models"
 	"fmt"
-	"os"
 
 	"elex_storage/pkg/auto_migration"
 
@@ -13,29 +12,14 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-var (
-	database string
-	password string
-	username string
-	port     string
-	host     string
-	schema   string
-	db       *sqlx.DB
-)
-
 func NewDatabase(config *models.ConfigEnv, logger logger.Logger) *sqlx.DB {
-	database = os.Getenv("DB_DATABASE")
-	password = os.Getenv("DB_PASSWORD")
-	username = os.Getenv("DB_USERNAME")
-	port = os.Getenv("DB_PORT")
-	host = os.Getenv("DB_HOST")
-	schema = os.Getenv("DB_SCHEMA")
-
-	// Reuse Connection
-	if db != nil {
-		return db
-	}
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable&search_path=%s",
+		config.Database.User,
+		config.Database.Password,
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.Name,
+		config.Database.Schema)
 	db, err := sqlx.Open("pgx", connStr)
 	if err != nil {
 		logger.Error(err.Error())
@@ -52,8 +36,9 @@ func ApplyMigration(db *sqlx.DB, cfg *models.ConfigEnv, logger logger.Logger) er
 	// Apply Migrations
 	migrationsErr := autoMigrateManager.AutoMigrate()
 	if migrationsErr != nil {
+		fmt.Println(migrationsErr.Error())
 		logger.Error(migrationsErr.Error())
-		return migrationsErr
+		return err
 	}
 	return nil
 }

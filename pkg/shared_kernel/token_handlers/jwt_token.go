@@ -4,13 +4,13 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"elex_storage/pkg/shared_kernel"
 	"elex_storage/pkg/shared_kernel/token_handlers/models"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,27 +23,21 @@ type JwtToken struct {
 	refreshTokenDuration time.Duration
 }
 
-// func NewJwtToken(config *domain.ConfigEnv) *JwtToken {
-// 	return &JwtToken{accessTokenDuration: config.AccessTokenDuration, refreshTokenDuration: config.RefreshTokenDuration}
-// }
-
 func NewJwtToken(accessTokenDuration time.Duration, refreshTokenDuration time.Duration) (*JwtToken, error) {
 	jwtToken := JwtToken{accessTokenDuration: accessTokenDuration, refreshTokenDuration: refreshTokenDuration}
 	return &jwtToken, nil
 }
 
-func (jwtToken *JwtToken) SetPublicKey() error {
-	pwd, _ := os.Getwd()
-	var exeDir = filepath.Dir(pwd)
-	// 1. Read public key
-	pathPublicKey := filepath.Join(exeDir, "jwt_identity_public.key")
-	file2, err := os.Open(pathPublicKey)
+func (jwtToken *JwtToken) SetPublicKey(publicKeyPath string) error {
+	publicKeyPathFix, err := shared_kernel.GetRelativePath(publicKeyPath)
+	file2, err := os.Open(publicKeyPathFix)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to read key file: %s", pathPublicKey))
+		return errors.Join(err, errors.New(
+			fmt.Sprintf("Failed to read key file: %s. File does not exist.", publicKeyPath)))
 	}
 	defer file2.Close()
 	publicKeyData, err := io.ReadAll(file2)
-	// 4. Parse public key
+	// Parse public key
 	publicKey, err := jwtToken.ParsePublicKey(publicKeyData)
 	if err != nil {
 		return errors.Join(errors.New("Invalid public key is provided"), err)
@@ -52,21 +46,19 @@ func (jwtToken *JwtToken) SetPublicKey() error {
 	return nil
 }
 
-func (jwtToken *JwtToken) SetPrivateKey() error {
-	pwd, _ := os.Getwd()
-	var exeDir = filepath.Dir(pwd)
-	// 1. Read private key
-	pathPrivateKey := filepath.Join(exeDir, "jwt_identity_private.key")
-	file1, err := os.Open(pathPrivateKey)
+func (jwtToken *JwtToken) SetPrivateKey(privateKeyPath string) error {
+	privateKeyPathFix, err := shared_kernel.GetRelativePath(privateKeyPath)
+	file1, err := os.Open(privateKeyPathFix)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to read key file: %s", pathPrivateKey))
+		return errors.Join(err, errors.New(
+			fmt.Sprintf("Failed to read key file: %s. File does not exist.", privateKeyPath)))
 	}
 	defer file1.Close()
 	privateKeyData, err := io.ReadAll(file1)
 	if err != nil {
 		return err
 	}
-	// 2. Parse private key
+	// Parse private key
 	privateKey, err := jwtToken.ParsePrivateKey(privateKeyData)
 	if err != nil {
 		return errors.Join(errors.New("Invalid private key is provided"), err)

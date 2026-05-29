@@ -4,42 +4,31 @@ import (
 	"elex_storage/identity_service/internal/adapter/grpc_server"
 	"elex_storage/identity_service/internal/adapter/messaging/publishers"
 	"elex_storage/identity_service/internal/adapter/pgx_repositories"
+	"elex_storage/pkg/shared_kernel/guard"
 	"elex_storage/pkg/shared_kernel/models"
 	"elex_storage/pkg/shared_kernel/token_handlers"
-	"net/http"
+	"errors"
 
 	"go.uber.org/fx"
 )
 
-// CORS middleware
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Use "*" for all origins, or replace with specific origins
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-CSRF-Token")
-		w.Header().Set("Access-Control-Allow-Credentials", "false") // Set to "true" if credentials are needed
-
-		// Handle preflight OPTIONS requests
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 func configureJwt(config *models.ConfigEnv) (*token_handlers.JwtToken, error) {
-	jwtToken, err := token_handlers.NewJwtToken(config.AccessTokenDuration, config.RefreshTokenDuration)
+	if !guard.AgainstTimeDurationPtr(config.AccessTokenDuration) || !guard.AgainstTimeDurationPtr(config.RefreshTokenDuration) {
+		return nil, errors.New(`The AccessTokenDuration or RefreshTokenDuration is either missing or invalid.
+		 Please configure them in config.yml`)
+	}
+	jwtToken, err := token_handlers.NewJwtToken(*config.AccessTokenDuration, *config.RefreshTokenDuration)
 	if err != nil {
 		return nil, err
 	}
-	err = jwtToken.SetPublicKey()
+	if !guard.AgainstPNullStr(config.JWTPrivateKeyPath) || !guard.AgainstPNullStr(config.JWTPublicKeyPath) {
+		return nil, errors.New(`The JWTPrivateKeyPath or JWTPublicKeyPath is either missing or invalid.
+		 Please configure them in config.yml`)
+	}
 	if err != nil {
 		return nil, err
 	}
-	err = jwtToken.SetPrivateKey()
+	err = jwtToken.SetPrivateKey(*config.JWTPrivateKeyPath)
 	if err != nil {
 		return nil, err
 	}

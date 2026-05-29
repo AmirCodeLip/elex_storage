@@ -14,6 +14,7 @@ type Auth struct {
 
 type Server struct {
 	HTTPListenUrl string `mapstructure:"http_listen_url"`
+	GRPCListenUrl string `mapstructure:"grpc_listen_url"`
 }
 
 type Database struct {

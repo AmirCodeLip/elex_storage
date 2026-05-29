@@ -20,7 +20,7 @@ type Server struct {
 	logger  logger.Logger
 }
 
-func NewServer(handler *http.Handler, cfg *models.ConfigEnv2) (*Server, error) {
+func NewServer(handler *http.Handler, cfg *models.ConfigEnv) (*Server, error) {
 	url, err := shared_kernel.ParseUrl(cfg.Server.HTTPListenUrl)
 	if err != nil {
 		return nil, errors.New("HTTPListenUrl is not set or is invalid; set it in config.yml")

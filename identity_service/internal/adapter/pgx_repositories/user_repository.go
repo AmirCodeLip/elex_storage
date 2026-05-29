@@ -6,7 +6,6 @@ import (
 	domain_errors "elex_storage/identity_service/internal/domain/errors"
 	"elex_storage/identity_service/internal/domain/repositories"
 	"elex_storage/pkg/logger"
-	"elex_storage/pkg/shared_kernel/models"
 	"errors"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -19,7 +18,7 @@ type UserRepository struct {
 	driveDisk string
 }
 
-func CreateFileRepository(logger logger.Logger, db *sqlx.DB, config *models.ConfigEnv) repositories.UserRepository {
+func CreateFileRepository(logger logger.Logger, db *sqlx.DB) repositories.UserRepository {
 	return &UserRepository{logger: logger, db: db}
 }
 

@@ -1,5 +1,7 @@
 package guard
 
+import "time"
+
 /* This method will check strings are null and empty or not if one of them have value it will skip  */
 func AgainstPNullStrs(params ...*string) bool {
 	oneValid := false
@@ -18,4 +20,8 @@ func AgainstPNullStr(param *string) bool {
 
 func AgainstEmptyStr(param string) bool {
 	return !(param == "")
+}
+
+func AgainstTimeDurationPtr(param *time.Duration) bool {
+	return !(param == nil || *param == 0)
 }

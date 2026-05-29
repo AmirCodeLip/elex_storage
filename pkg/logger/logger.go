@@ -3,40 +3,13 @@ package logger
 import (
 	"elex_storage/pkg/shared_kernel/models"
 	"errors"
-	"os"
-	"path/filepath"
-	"strings"
+	"fmt"
 	"testing"
 )
 
 type Logger interface {
 	Info(msg string, fields ...any)
 	Error(msg string, fields ...any)
-}
-
-func NewLogger(cfg *models.ConfigEnv) Logger {
-	// Clean logger to support linux
-	parts := strings.Split(cfg.LoggerPath, "\\")
-	loggerPath := ""
-	for _, p := range parts {
-		loggerPath = filepath.Join(loggerPath, p)
-	}
-	dir := filepath.Dir(loggerPath)
-
-	// Create logger directories
-	createrDirErr := os.MkdirAll(dir, os.ModePerm)
-	if createrDirErr != nil {
-		panic(createrDirErr)
-	}
-
-	// Create logger file
-	file, err := os.Create(loggerPath)
-	if err != nil {
-		panic(err)
-	}
-
-	var logger Logger = newZapLogger(file)
-	return logger
 }
 
 func NewLoggerMock(t *testing.T) Logger {
@@ -54,4 +27,8 @@ func HandleCommonErr(err error, logger Logger) (bool, error) {
 	// Unexpected database error
 	logger.Error("Database error during file insertion: " + err.Error())
 	return false, err
+}
+
+func RedConsoleLog(a ...any) {
+	fmt.Println("\033[1;31m", fmt.Sprint(a...), "\033[0m")
 }

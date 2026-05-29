@@ -12,7 +12,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func NewDatabase(config *models.ConfigEnv2, logger logger.Logger) *sqlx.DB {
+func NewDatabase(config *models.ConfigEnv, logger logger.Logger) *sqlx.DB {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable&search_path=%s",
 		config.Database.User,
 		config.Database.Password,
@@ -27,7 +27,7 @@ func NewDatabase(config *models.ConfigEnv2, logger logger.Logger) *sqlx.DB {
 	return db
 }
 
-func ApplyMigration(db *sqlx.DB, cfg *models.ConfigEnv2, logger logger.Logger) error {
+func ApplyMigration(db *sqlx.DB, cfg *models.ConfigEnv, logger logger.Logger) error {
 	autoMigrateManager, err := auto_migration.NewAutoMigrateManager(db, cfg.MigrationsDir)
 	if err != nil {
 		logger.Error(err.Error())

@@ -20,7 +20,7 @@ type RabbitmqMessaging struct {
 }
 
 // broker client setup
-func NewRabbitmqMessaging(logger logger.Logger, cfg *models.ConfigEnv2) (EventMessaging, error) {
+func NewRabbitmqMessaging(logger logger.Logger, cfg *models.ConfigEnv) (EventMessaging, error) {
 	rabbitmqConnectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", cfg.RabbitMQ.User,
 		cfg.RabbitMQ.Password, cfg.RabbitMQ.Host, cfg.RabbitMQ.Port)
 	conn, err := amqp091.Dial(rabbitmqConnectionString)

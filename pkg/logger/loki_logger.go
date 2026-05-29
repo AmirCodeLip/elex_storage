@@ -37,7 +37,7 @@ func (l *LokiLogger) Error(msg string, fields ...any) {
 	l.logger.Log(ctx, slog.LevelError, msg, allFields...)
 }
 
-func NewLokiLogger(cfg *models.ConfigEnv2) (Logger, error) {
+func NewLokiLogger(cfg *models.ConfigEnv) (Logger, error) {
 	config := slogloki.NewDefaultConfig(cfg.Loki.APIAddress)
 	handler, err := slogloki.NewLokiHandler(config, map[string]string{
 		"service": cfg.ServiceName,

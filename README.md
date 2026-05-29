@@ -57,13 +57,10 @@ cd file_storage
 # Copy environment configuration
 cp .env.example .env
 
-# Back to the root directory
-cd ..
-
 # Edit configs.yml inside file_storage (manually edit this file) and set db, rabitmq configs
 
 # Then run the application
-go run ./file_storage/cmd/main.go
+go run ./cmd/main.go
 ```
 
 
