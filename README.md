@@ -36,7 +36,7 @@ description
 description
 
 ## Configuration from source:
-All environment variables (including database connections and JWT keys) must be set in a .env file.
+All environment variables (including database connections and JWT keys) must be set in a configs.yml inside each project but security items like database passwords are set directly from env.
 
 Run each of the following from the project root directory after cloning.
 
@@ -53,6 +53,16 @@ go run ./file_metadata/cmd/main.go
 File Storage Service
 
 ```sh
+cd file_storage
+# Copy environment configuration
+cp .env.example .env
+
+# Back to the root directory
+cd ..
+
+# Edit configs.yml inside file_storage (manually edit this file) and set db, rabitmq configs
+
+# Then run the application
 go run ./file_storage/cmd/main.go
 ```
 

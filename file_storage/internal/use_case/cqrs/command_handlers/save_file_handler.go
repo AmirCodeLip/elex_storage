@@ -18,13 +18,13 @@ import (
 
 type SaveFileHandler struct {
 	logger           logger.Logger
-	config           *models.ConfigEnv
+	config           *models.ConfigEnv2
 	fileRepository   repositories.FileRepository
 	pathUtil         *core_utils.PathUtil
 	storagePublisher publishers.StoragePublisher
 }
 
-func NewSaveFileHandler(logger logger.Logger, config *models.ConfigEnv,
+func NewSaveFileHandler(logger logger.Logger, config *models.ConfigEnv2,
 	fileRepository repositories.FileRepository, pathUtil *core_utils.PathUtil,
 	storagePublisher publishers.StoragePublisher) *SaveFileHandler {
 	return &SaveFileHandler{logger, config, fileRepository, pathUtil, storagePublisher}
@@ -127,7 +127,7 @@ func (u *SaveFileHandler) Handle(cmd commands.SaveFileCommand) error {
 		Name:        cmd.Name,
 		ContentType: fileEntity.ContentType,
 		Size:        len(*cmd.Data),
-		Drive:       u.config.DriveName,
+		Drive:       u.config.ServiceName,
 		Checksum:    checksum,
 		Key:         key, // Make sure 'key' isn't expected to be populated for existing files if left nil
 	})

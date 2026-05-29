@@ -26,11 +26,7 @@ type AutoMigrateManager struct {
 }
 
 func NewAutoMigrateManager(db *sqlx.DB, migrationsDir string) (*AutoMigrateManager, error) {
-	// Get migrations directory
-	pwd, _ := os.Getwd()
-	var exeDir = filepath.Dir(pwd)
-	migrationDir := filepath.Join(exeDir, migrationsDir) // directory of migrations
-	info, err := os.Stat(migrationDir)
+	info, err := os.Stat(migrationsDir)
 	if err != nil {
 		return nil, errors.Join(migrationsErr, err)
 	}
@@ -50,7 +46,7 @@ func NewAutoMigrateManager(db *sqlx.DB, migrationsDir string) (*AutoMigrateManag
 		return nil, errors.Join(migrationsErr, err)
 	}
 
-	return &AutoMigrateManager{Path: migrationDir, db: db}, nil
+	return &AutoMigrateManager{Path: migrationsDir, db: db}, nil
 }
 
 func (autoMigrateManager *AutoMigrateManager) ReadFiles() error {

@@ -1,5 +1,5 @@
-service_name: file_storage
-migrations_dir: migrations
+service_name: iran_north_cloud
+drive_disk: bin\elex_storage_D
 
 loki:
   # Main endpoint for pushing logs

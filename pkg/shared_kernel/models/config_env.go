@@ -29,8 +29,9 @@ type ConfigEnv struct {
 }
 
 type ConfigEnv2 struct {
-	ServiceName   string   `mapstructure:"service_name"`
-	MigrationsDir string   `mapstructure:"migrations_dir"`
+	ServiceName   string `mapstructure:"service_name"`
+	DriveDisk     string `mapstructure:"drive_disk"`
+	MigrationsDir string
 	Loki          Loki     `mapstructure:"loki"`
 	Server        Server   `mapstructure:"server"`
 	Database      Database `mapstructure:"database"`

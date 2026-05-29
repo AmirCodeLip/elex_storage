@@ -133,7 +133,7 @@ func NewConfigEnv() (*models.ConfigEnv, error) {
 }
 
 func NewConfigEnv2() (*models.ConfigEnv2, error) {
-	env, err := GetFilePath(".env")
+	env, err := GetPath(".env")
 	if err == nil {
 		errEnv := godotenv.Load(env)
 		if errEnv != nil {
@@ -143,7 +143,7 @@ func NewConfigEnv2() (*models.ConfigEnv2, error) {
 	}
 
 	/// Load yml file
-	ymlConfig, err := GetFilePath("configs.yml")
+	ymlConfig, err := GetPath("configs.yml")
 	if err != nil {
 		return nil, err
 	}
@@ -174,11 +174,14 @@ func NewConfigEnv2() (*models.ConfigEnv2, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	fmt.Println(config2.Database.Name)
+	if migrationDir, err := GetPath("migrations"); err == nil {
+		config2.MigrationsDir = migrationDir
+	}
+
 	return &config2, nil
 }
 
-func GetFilePath(fileName string) (string, error) {
+func GetPath(fileName string) (string, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current working directory: %w", err)

@@ -9,10 +9,10 @@ import (
 )
 
 type PathUtil struct {
-	config *models.ConfigEnv
+	config *models.ConfigEnv2
 }
 
-func NewPathUtil(config *models.ConfigEnv) *PathUtil {
+func NewPathUtil(config *models.ConfigEnv2) *PathUtil {
 	return &PathUtil{config}
 }
 
