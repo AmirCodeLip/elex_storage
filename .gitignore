@@ -64,3 +64,6 @@ Thumbs.db
 *.tmp
 *.swp
 docker/.data/*
+
+# Security items
+*.key
