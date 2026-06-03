@@ -1,0 +1,39 @@
+service_name: identity_service
+
+# This keys are used for authenticate the user
+jwt_private_key_path: ./jwt_identity_private.key
+jwt_public_key_path: ./jwt_identity_public.key
+access_token_duration: 48h
+refresh_token_duration: 720h
+
+loki:
+  # Main endpoint for pushing logs
+  api_address: http://localhost:3100/loki/api/v1/push
+
+  # Optional: Alternative endpoint for queries
+  query_address: http://localhost:3100/loki/api/v1/query
+
+  # Authentication (if needed)
+  auth:
+    username: ${LOKI_USER:-} # Optional, env var with default empty
+    password: ${LOKI_PASSWORD:-}
+    tenant_id: ${LOKI_TENANT_ID:-file_storage}
+
+server:
+  grpc_listen_url: localhost:50051
+
+# Database configuration
+database:
+  host: localhost
+  port: 5432
+  name: file_storage
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+  schema: public
+
+# RabbitMQ configuration
+rabbitmq:
+  host: localhost
+  port: 5672
+  user: ${RABBITMQ_USER}
+  password: ${RABBITMQ_PASSWORD}

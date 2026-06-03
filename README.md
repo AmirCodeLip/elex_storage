@@ -54,10 +54,10 @@ File Storage Service
 
 ```sh
 cd file_storage
-# Copy environment configuration
+# Copy environment configuration. Secrets such as usernames and passwords are kept in this file.
 cp .env.example .env
 
-# Edit configs.yml inside file_storage (manually edit this file) and set db, rabitmq configs
+# Edit configs.yml inside file_storage (manually edit this file) and set db, rabbitmq configs
 
 # Then run the application
 go run ./cmd/main.go

@@ -25,7 +25,7 @@ func NewRabbitmqMessaging(logger logger.Logger, cfg *models.ConfigEnv) (EventMes
 		cfg.RabbitMQ.Password, cfg.RabbitMQ.Host, cfg.RabbitMQ.Port)
 	conn, err := amqp091.Dial(rabbitmqConnectionString)
 	if err != nil {
-		err2 := errors.New(fmt.Sprintf("connection rabitmq %s", rabbitmqConnectionString))
+		err2 := errors.New(fmt.Sprintf("connection rabbitmq %s", rabbitmqConnectionString))
 		logger.Info(err2.Error())
 		logger.Error(err.Error())
 		return nil, errors.Join(err2, err)

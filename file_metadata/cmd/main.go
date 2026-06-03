@@ -18,9 +18,8 @@ func main() {
 	fx.New(
 		fx.Provide(
 			shared_kernel.NewConfigEnv,
-			logger.NewLogger,
+			logger.NewLokiLogger,
 			database.NewDatabase,
-			configs.NewServer,
 			utils.NewHttpErrorUtils,
 			message_broker.NewRabbitmqMessaging,
 			configs.NewGRPCServer,
@@ -28,7 +27,6 @@ func main() {
 		use_case.UseCaseModule(),
 		adapter.AdapterModule(),
 		fx.Invoke(database.ApplyMigration),
-		// fx.Invoke(configs.RegisterFX),
 		fx.Invoke(configs.RegisterAndStartGRPCServer),
 		fx.Invoke(configs.OnAppStop),
 	).Run()
