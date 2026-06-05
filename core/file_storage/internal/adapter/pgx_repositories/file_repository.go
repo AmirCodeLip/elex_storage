@@ -27,8 +27,8 @@ func (fileRepository *FileRepository) BeginTransaction() (*sqlx.Tx, error) {
 
 func (fileRepository *FileRepository) Insert(fileEntity *entities.FileEntity, tx *sqlx.Tx) error {
 	_, insertErr := tx.NamedExec(
-		`INSERT INTO files (id ,name ,is_mounted ,created_at ,content_type ,checksum) VALUES 
-			(:id ,:name ,false ,:created_at ,:content_type ,:checksum)`,
+		`INSERT INTO files (id, is_mounted ,created_at ,content_type ,checksum) VALUES 
+			(:id ,false ,:created_at ,:content_type ,:checksum)`,
 		fileEntity,
 	)
 	if insertErr != nil {
@@ -36,6 +36,14 @@ func (fileRepository *FileRepository) Insert(fileEntity *entities.FileEntity, tx
 		return InsertFileErr
 	}
 	return nil
+}
+
+func (fileRepository *FileRepository) GetAll() ([]entities.FileEntity, error) {
+	files := []entities.FileEntity{}
+	err := fileRepository.db.Select(&files,
+		`SELECT id, is_mounted ,created_at ,content_type ,checksum FROM files`,
+	)
+	return files, err
 }
 
 func (r *FileRepository) GetByHash(checksum string) (*entities.FileEntity, error) {

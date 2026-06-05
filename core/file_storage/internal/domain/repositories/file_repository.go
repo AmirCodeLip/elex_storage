@@ -10,4 +10,5 @@ type FileRepository interface {
 	Insert(fileEntity *entities.FileEntity, tx *sqlx.Tx) error
 	GetByHash(checksum string) (*entities.FileEntity, error)
 	BeginTransaction() (*sqlx.Tx, error)
+	GetAll() ([]entities.FileEntity, error)
 }

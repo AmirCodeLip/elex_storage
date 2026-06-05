@@ -15,13 +15,13 @@ func AgainstPNullStrs(params ...*string) bool {
 
 /* This method will check string is null and empty or not if is null it's return false  */
 func AgainstPNullStr(param *string) bool {
-	return !(param == nil || *param == "")
+	return (param == nil || *param == "")
 }
 
 func AgainstEmptyStr(param string) bool {
-	return !(param == "")
+	return (param == "")
 }
 
 func AgainstTimeDurationPtr(param *time.Duration) bool {
-	return !(param == nil || *param == 0)
+	return (param == nil || *param == 0)
 }

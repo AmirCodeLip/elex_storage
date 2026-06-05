@@ -61,7 +61,6 @@ func (u *SaveFileHandler) Handle(cmd commands.SaveFileCommand) error {
 
 		fileEntity = &entities.FileEntity{
 			Id:          newFileId,
-			Name:        cmd.Name,
 			CreatedAt:   time.Now(),
 			ContentType: contentType,
 			Checksum:    checksum,
