@@ -18,7 +18,7 @@ type UserRepository struct {
 	driveDisk string
 }
 
-func CreateFileRepository(logger logger.Logger, db *sqlx.DB) repositories.UserRepository {
+func CreateUserRepository(logger logger.Logger, db *sqlx.DB) repositories.UserRepository {
 	return &UserRepository{logger: logger, db: db}
 }
 
